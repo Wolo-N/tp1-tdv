@@ -7,7 +7,7 @@ def main():
 
 	# Ejemplo para leer una instancia con json
 	instance_name = "titanium.json"
-	filename = "../../data/" + instance_name
+	filename = "/Users/nicolasfranke/Desktop/DITELLA/TDV -  Diseño de Algoritmos/TPs/tp1/data/" + instance_name
 	with open(filename) as f:
 		instance = json.load(f)
 	
@@ -48,6 +48,8 @@ def main():
 	with open('solution_' + instance_name, 'w') as f:
 		json.dump(solution, f)
 
-	
+	print('hola mundo')
+
+
 if __name__ == "__main__":
 	main()
