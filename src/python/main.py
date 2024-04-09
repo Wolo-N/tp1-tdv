@@ -2,6 +2,7 @@ import json
 import numpy as np
 
 BIG_NUMBER = 1e10 # Revisar si es necesario.
+
 def calcular_error(a: tuple, b: tuple, instance: json) -> float:
     error = 0
     min_length = min(b[0] - a[0], len(instance["y"]), len(instance["x"]))
@@ -11,7 +12,7 @@ def calcular_error(a: tuple, b: tuple, instance: json) -> float:
 
 
 def fuerza_bruta(m: int, n: int, N: int, instance: json, i: int, bp: list, error_total: float):
-    if N == 0:  # Breakpoints.
+    if len(bp) == N:  # Verificar si ya se han alcanzado N breakpoints.
         return bp, error_total
 
     if n == 0:  # No tengo columnas.
@@ -20,6 +21,7 @@ def fuerza_bruta(m: int, n: int, N: int, instance: json, i: int, bp: list, error
     if n == 1 or bp == []:  # Estoy en la primer columna y no tengo bp elegidos.
         bp_candidatos = []
         error_total_candidatos = []
+        error_total_candidatos.append(BIG_NUMBER)
 
         for y in range(m):  # Iterar sobre las Y de mi X=0 fijo.
             new_bp = [[0, y]]
@@ -31,10 +33,10 @@ def fuerza_bruta(m: int, n: int, N: int, instance: json, i: int, bp: list, error
 
     else:
         best_solution = bp[:]  # Copiar la lista de breakpoints actual como la mejor solución inicial
-        best_error = error_total
+        best_error = BIG_NUMBER  # Inicializar con un valor grande
 
         for j in range(m):  # Para cada fila de la grilla
-            for k in range(i + 1, n + 1):
+            for k in range(i + 1, n):
                 error, a, b = calcular_error(bp[-1], [k, j], instance)  # Calcular el error para el nuevo breakpoint
                 bp.append(b)  # Agregar el nuevo breakpoint a la lista
                 sol, error = fuerza_bruta(m, n, N - 1, instance, k, bp, error_total + error)  # Llamada recursiva con un breakpoint menos
@@ -42,26 +44,27 @@ def fuerza_bruta(m: int, n: int, N: int, instance: json, i: int, bp: list, error
                     best_solution = sol[:]
                     best_error = error
 
-                bp.pop()  # Eliminar el último breakpoint agregado
+                bp.pop()  # Eliminar el último breakpoint agregado, hago las combinaciones de no elegirlo.
                 sol, error = fuerza_bruta(m, n, N, instance, k, bp, error_total + error)
-                # Actualizar la mejor solución y el mejor error si el nuevo error es menor
                 if error < best_error:
                     best_solution = sol[:]
                     best_error = error
+
         return best_solution, best_error
 
 def main():
+
 	# Ejemplo para leer una instancia con json
 	instance_name = "titanium.json"
-	filename = "data/" + instance_name 
+	filename = "../data/" + instance_name
 	with open(filename) as f:
 		instance = json.load(f)
 	
-	K = instance["n"] #cantidad de puntos
-	m = 6			  #cantidad de filas 
-	n = 6			  #cantidad de columnas
-	N = 5			  #cantidad de breakpoints
-	#print(calcular_error([0,0],[1,3],instance))
+	K = instance["n"]
+	m = 6
+	n = 6
+	N = 5
+	
 	# Ejemplo para definir una grilla de m x n.
 	grid_x = np.linspace(min(instance["x"]), max(instance["x"]), num=m, endpoint=True)
 	grid_y = np.linspace(min(instance["y"]), max(instance["y"]), num=n, endpoint=True)
@@ -71,14 +74,16 @@ def main():
 
 	best = {}
 	best['sol'] = [None]*(N+1)
-	best['obj'] = BIG_NUMBER
+	best['obj'] = None  # Inicializar con None para que no afecte el cálculo del error total
 	
 	# Posible ejemplo (para la instancia titanium) de formato de solucion, y como exportarlo a JSON.
 	# La solucion es una lista de tuplas (i,j), donde:
 	# - i indica el indice del punto de la discretizacion de la abscisa
 	# - j indica el indice del punto de la discretizacion de la ordenada.
-	best['sol'] , best['obj'] = fuerza_bruta(m,n,N,instance,0,[],0)
-	# = 5.927733333333335
+	best['sol'], best['obj'] = fuerza_bruta(m,n,N,instance,0,[],0)
+     
+	# Calcular el error total
+	# = sum(calcular_error(best['sol'][i], best['sol'][i + 1], instance)[0] for i in range(len(best['sol']) - 1))
 
 	# Represetnamos la solucion con un diccionario que indica:
 	# - n: cantidad de breakpoints
@@ -94,6 +99,5 @@ def main():
 	with open('solution_' + instance_name, 'w') as f:
 		json.dump(solution, f)
 
-	
 if __name__ == "__main__":
 	main()
