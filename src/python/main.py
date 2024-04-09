@@ -1,99 +1,67 @@
 import json
 import numpy as np
-import os
 
-BIG_NUMBER = 1e10
+BIG_NUMBER = 1e10 # Revisar si es necesario.
+def calcular_error(a: tuple, b: tuple, instance: json) -> float:
+    error = 0
+    min_length = min(b[0] - a[0], len(instance["y"]), len(instance["x"]))
+    for i in range(min_length):
+        error += abs(instance["y"][i] - ((b[1] - a[1]) / (b[0] - a[0])) * (instance["x"][i] - a[0]) + a[1]) # recta, meter input x
+    return error,a,b
 
-def calcular_error(a: tuple, b: tuple, instance: json):
-	i=0
-	error = 0
-	while i < b[0] - a[0]:
-		error = error + instance["y"][i]- ((b[1]-a[1])/(b[0]-a[0]))*(instance["x"][i]-a[0])+a[1] #recta, meter input x
-		i = i + 1
-		return error
-    
 
-def fuerza_bruta(grilla, K):
-    # Función principal que implementa el algoritmo de fuerza bruta para encontrar la mejor aproximación PWL.
-    
-    # Función auxiliar para generar todas las combinaciones de breakpoints posibles.
-		# i = punto en la grilla considerado. 
-		# actual = breakpoint actual.
-		# K = número máximo de breakpoints. 
-    print("entró 2")
-    def generar_combinaciones_utilizadas(i, actual, grilla, K, solucion_actual, mejor_solucion, mejor_error):
-    # CASO BASE: Se alcanzó el número deseado de breakpoints K.
-        if len(actual) == K:
-            # Calcular el error total de la solución actual.
-            error_actual = calcular_error(grilla, actual)
-            # Actualizar la mejor solución si el error actual es menor que el mejor error encontrado hasta el momento.
-            if error_actual < mejor_error:
-                mejor_error = error_actual
-                mejor_solucion = actual[:]  # Hacemos una copia de la lista actual
-            return mejor_solucion, mejor_error
-        print("control")
-        # CASO RECURSIVO: Agregar o no agregar el punto actual como breakpoint.
-        if i < len(grilla):
-            # Caso 1: Agregar el punto actual como breakpoint.
-            actual.append(grilla[i])
-            mejor_solucion, mejor_error = generar_combinaciones_utilizadas(i + 1, actual[:], grilla, K, solucion_actual, mejor_solucion, mejor_error)
-            actual.pop()  # Retirar el punto agregado para probar el siguiente caso.
-            # Caso 2: No agregar el punto actual como breakpoint.
-            mejor_solucion, mejor_error = generar_combinaciones_utilizadas(i + 1, actual[:], grilla, K, solucion_actual, mejor_solucion, mejor_error)
-        print("Salió 2")
-        return mejor_solucion, mejor_error
+def fuerza_bruta(m: int, n: int, N: int, instance: json, i: int, bp: list, error_total: float):
+    if N == 0:  # Breakpoints.
+        return bp, error_total
 
-    
-    # Inicializar la mejor solución y el mejor error.
-    mejor_solucion = []
-    mejor_error = BIG_NUMBER
-    
-    # Llamar a la función auxiliar para generar todas las combinaciones posibles de breakpoints.
-    mejor_solucion, mejor_error = generar_combinaciones_utilizadas(0, [], grilla, K, [], mejor_solucion, mejor_error)
-    
-    return mejor_solucion, mejor_error
+    if n == 0:  # No tengo columnas.
+        return bp, error_total
 
-def test_fuerza_bruta():
-    data_path = os.path.join("/Users/victoriamarsili/Desktop/di_tella_2024/td5/tp1/tp1-tdv/data", "titanium.json")
-    expected_solution_path = os.path.join("/Users/victoriamarsili/Desktop/di_tella_2024/td5/tp1/tp1-tdv/src/python", "solution_titanium.json")
-    # Carga los datos de entrada y la solución esperada
-    with open(data_path) as f:
-        data = json.load(f)
-    with open(expected_solution_path) as f:
-        expected_solution = json.load(f)
+    if n == 1 or bp == []:  # Estoy en la primer columna y no tengo bp elegidos.
+        bp_candidatos = []
+        error_total_candidatos = []
 
-    # Extrae los datos relevantes
-    grilla = list(zip(data["x"], data["y"]))
-    K = expected_solution["n"]
-    
-    # Ejecuta el algoritmo de fuerza bruta
-    solucion, error = fuerza_bruta(grilla, K)
-    
-    # Verifica si la solución es la esperada
-    assert len(solucion) == expected_solution["n"], "El número de breakpoints no coincide con la solución esperada"
-    for i in range(len(solucion)):
-        assert abs(solucion[i][0] - expected_solution["x"][i]) < 1e-6, f"La coordenada x del breakpoint {i} no coincide con la solución esperada"
-        assert abs(solucion[i][1] - expected_solution["y"][i]) < 1e-6, f"La coordenada y del breakpoint {i} no coincide con la solución esperada"
-    assert abs(error - expected_solution["obj"]) < 1e-6, "El error total no coincide con la solución esperada"
-    
-    print("¡El test ha pasado con éxito!")
+        for y in range(m):  # Iterar sobre las Y de mi X=0 fijo.
+            new_bp = [[0, y]]
+            bp_candidato, error_total_candidato = fuerza_bruta(m, n, N - 1, instance, i + 1, new_bp, error_total)
+            bp_candidatos.append(bp_candidato)
+            error_total_candidatos.append(error_total_candidato)
 
-if __name__ == "__main__":
-    test_fuerza_bruta()
+        return bp_candidatos[error_total_candidatos.index(min(error_total_candidatos))], min(error_total_candidatos)
 
-"""def main():
+    else:
+        best_solution = bp[:]  # Copiar la lista de breakpoints actual como la mejor solución inicial
+        best_error = error_total
 
+        for j in range(m):  # Para cada fila de la grilla
+            for k in range(i + 1, n + 1):
+                error, a, b = calcular_error(bp[-1], [k, j], instance)  # Calcular el error para el nuevo breakpoint
+                bp.append(b)  # Agregar el nuevo breakpoint a la lista
+                sol, error = fuerza_bruta(m, n, N - 1, instance, k, bp, error_total + error)  # Llamada recursiva con un breakpoint menos
+                if error < best_error:
+                    best_solution = sol[:]
+                    best_error = error
+
+                bp.pop()  # Eliminar el último breakpoint agregado
+                sol, error = fuerza_bruta(m, n, N, instance, k, bp, error_total + error)
+                # Actualizar la mejor solución y el mejor error si el nuevo error es menor
+                if error < best_error:
+                    best_solution = sol[:]
+                    best_error = error
+        return best_solution, best_error
+
+def main():
 	# Ejemplo para leer una instancia con json
 	instance_name = "titanium.json"
-	filename = "../../data/" + instance_name
+	filename = "data/" + instance_name 
 	with open(filename) as f:
 		instance = json.load(f)
 	
-	K = instance["n"] #datos
-	m = 6
-	n = 6
-	N = 5 #breakpoints.
-	
+	K = instance["n"] #cantidad de puntos
+	m = 6			  #cantidad de filas 
+	n = 6			  #cantidad de columnas
+	N = 5			  #cantidad de breakpoints
+	#print(calcular_error([0,0],[1,3],instance))
 	# Ejemplo para definir una grilla de m x n.
 	grid_x = np.linspace(min(instance["x"]), max(instance["x"]), num=m, endpoint=True)
 	grid_y = np.linspace(min(instance["y"]), max(instance["y"]), num=n, endpoint=True)
@@ -109,8 +77,8 @@ if __name__ == "__main__":
 	# La solucion es una lista de tuplas (i,j), donde:
 	# - i indica el indice del punto de la discretizacion de la abscisa
 	# - j indica el indice del punto de la discretizacion de la ordenada.
-	best['sol'] = [(0, 0), (1, 0), (2, 0), (3, 2), (4, 0), (5, 0)]
-	best['obj'] = 5.927733333333335
+	best['sol'] , best['obj'] = fuerza_bruta(m,n,N,instance,0,[],0)
+	# = 5.927733333333335
 
 	# Represetnamos la solucion con un diccionario que indica:
 	# - n: cantidad de breakpoints
@@ -129,4 +97,3 @@ if __name__ == "__main__":
 	
 if __name__ == "__main__":
 	main()
-    """
