@@ -15,7 +15,7 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
 
-        m, n, N = 7, 7, 6
+        m, n, N = 6, 6, 5
 
         # generamos la grillas
         grid_x = np.linspace(min(instance["x"]), max(instance["x"]), num=m, endpoint=True)
@@ -24,7 +24,7 @@ def main():
 
         combinaciones = {}
         fuerza_bruta(m, n, N, instance, 0, [], 0, combinaciones, grid_x, grid_y)
-
+        print(min(combinaciones))
         start_time = time.time()
         # Sort and pick top 5 combinations based on error
         top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
