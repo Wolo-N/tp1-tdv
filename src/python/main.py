@@ -1,103 +1,111 @@
 import json
 import numpy as np
 
-BIG_NUMBER = 1e10 # Revisar si es necesario.
-
-def calcular_error(a: tuple, b: tuple, instance: json) -> float:
+def calcular_error(a: tuple, b: tuple, grid_x, grid_y, instance):
     error = 0
-    min_length = min(b[0] - a[0], len(instance["y"]), len(instance["x"]))
-    for i in range(min_length):
-        error += abs(instance["y"][i] - ((b[1] - a[1]) / (b[0] - a[0])) * (instance["x"][i] - a[0]) + a[1]) # recta, meter input x
-    return error,a,b
+    ax, ay = grid_x[a[0]], grid_y[a[1]]
+    bx, by = grid_x[b[0]], grid_y[b[1]]
+    for i, x in enumerate(instance["x"]):
+        if ax <= x <= bx:
+            predicted_y = ((by - ay) / (bx - ax)) * (x - ax) + ay
+            error += abs(instance["y"][i] - predicted_y)
+    return error
+
+def check_and_skip_middle_bp(bp, grid_x, grid_y):
+    if len(bp) >= 3:
+        # Obtener las coordenadas de los tres últimos breakpoints
+        last_i, last_j = bp[-1]
+        second_last_i, second_last_j = bp[-2]
+        third_last_i, third_last_j = bp[-3]
+        
+        # Calcular las coordenadas x e y de los tres puntos
+        last_x, last_y = grid_x[last_i], grid_y[last_j]
+        second_last_x, second_last_y = grid_x[second_last_i], grid_y[second_last_j]
+        third_last_x, third_last_y = grid_x[third_last_i], grid_y[third_last_j]
+        
+        # Calcular las pendientes entre los tres puntos
+        slope_last = (last_y - second_last_y) / (last_x - second_last_x)
+        slope_second_last = (second_last_y - third_last_y) / (second_last_x - third_last_x)
+        
+        # Si las pendientes son iguales, conserva solo los extremos
+        if np.isclose(slope_last, slope_second_last):
+            bp.pop(-2)  # Eliminar el breakpoint del medio
+
+    return bp
+
+def fuerza_bruta(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y):
+    if len(bp) == N:
+        combinaciones[tuple(bp)] = error_total
+        return bp, error_total, combinaciones
+
+    bp = check_and_skip_middle_bp(bp, grid_x, grid_y)  # Verificar y omitir el breakpoint del medio si es necesario
+
+    for j in range(n):  # Iterate over all possible y positions for the next breakpoint
+        if not bp or i < m:  # Check to add breakpoints if not started or if more can be added
+            next_i = i + 1 if bp else i  # If starting, keep at 0, else move to next
+            if next_i < m:  # Ensure next_i is within grid limits
+                new_bp = bp + [(next_i, j)]
+                # Calculate error only if there is a previous point to compare with
+                if bp:
+                    error = calcular_error(bp[-1], (next_i, j), grid_x, grid_y, instance)
+                    # Recursive call to add the next breakpoint
+                    fuerza_bruta(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y)
+                else:
+                    # Initial call without previous point, so no error to add
+                    fuerza_bruta(m, n, N, instance, next_i, new_bp, error_total, combinaciones, grid_x, grid_y)
+
+    return bp, error_total, combinaciones
 
 
-def fuerza_bruta(m: int, n: int, N: int, instance: json, i: int, bp: list, error_total: float):
-    if len(bp) == N:  # Verificar si ya se han alcanzado N breakpoints.
-        return bp, error_total
-
-    if n == 0:  # No tengo columnas.
-        return bp, error_total
-
-    if n == 1 or bp == []:  # Estoy en la primer columna y no tengo bp elegidos.
-        bp_candidatos = []
-        error_total_candidatos = []
-        error_total_candidatos.append(BIG_NUMBER)
-
-        for y in range(m):  # Iterar sobre las Y de mi X=0 fijo.
-            new_bp = [[0, y]]
-            bp_candidato, error_total_candidato = fuerza_bruta(m, n, N - 1, instance, i + 1, new_bp, error_total)
-            bp_candidatos.append(bp_candidato)
-            error_total_candidatos.append(error_total_candidato)
-
-        return bp_candidatos[error_total_candidatos.index(min(error_total_candidatos))], min(error_total_candidatos)
-
-    else:
-        best_solution = bp[:]  # Copiar la lista de breakpoints actual como la mejor solución inicial
-        best_error = BIG_NUMBER  # Inicializar con un valor grande
-
-        for j in range(m):  # Para cada fila de la grilla
-            for k in range(i + 1, n):
-                error, a, b = calcular_error(bp[-1], [k, j], instance)  # Calcular el error para el nuevo breakpoint
-                bp.append(b)  # Agregar el nuevo breakpoint a la lista
-                sol, error = fuerza_bruta(m, n, N - 1, instance, k, bp, error_total + error)  # Llamada recursiva con un breakpoint menos
-                if error < best_error:
-                    best_solution = sol[:]
-                    best_error = error
-
-                bp.pop()  # Eliminar el último breakpoint agregado, hago las combinaciones de no elegirlo.
-                sol, error = fuerza_bruta(m, n, N, instance, k, bp, error_total + error)
-                if error < best_error:
-                    best_solution = sol[:]
-                    best_error = error
-
-        return best_solution, best_error
 
 def main():
+    # Load instance from JSON
+    instance_name = "titanium.json"
+    filename = "data/" + instance_name
+    with open(filename) as f:
+        instance = json.load(f)
 
-	# Ejemplo para leer una instancia con json
-	instance_name = "titanium.json"
-	filename = "../data/" + instance_name
-	with open(filename) as f:
-		instance = json.load(f)
-	
-	K = instance["n"]
-	m = 6
-	n = 6
-	N = 5
-	
-	# Ejemplo para definir una grilla de m x n.
-	grid_x = np.linspace(min(instance["x"]), max(instance["x"]), num=m, endpoint=True)
-	grid_y = np.linspace(min(instance["y"]), max(instance["y"]), num=n, endpoint=True)
+    m, n, N = 6, 6, 5
 
+    # Generate grid
+    min_x, max_x = min(instance["x"]), max(instance["x"])
+    min_y, max_y = min(instance["y"]), max(instance["y"])
+    grid_x = np.linspace(min_x, max_x, num=m, endpoint=True)
+    grid_y = np.linspace(min_y, max_y, num=n, endpoint=True)
 
-	# TODO: aca se deberia ejecutar el algoritmo.
+    combinaciones = {}
+    fuerza_bruta(m, n, N, instance, 0, [], 0, combinaciones, grid_x, grid_y)
 
-	best = {}
-	best['sol'] = [None]*(N+1)
-	best['obj'] = None  # Inicializar con None para que no afecte el cálculo del error total
-	
-	# Posible ejemplo (para la instancia titanium) de formato de solucion, y como exportarlo a JSON.
-	# La solucion es una lista de tuplas (i,j), donde:
-	# - i indica el indice del punto de la discretizacion de la abscisa
-	# - j indica el indice del punto de la discretizacion de la ordenada.
-	best['sol'], best['obj'] = fuerza_bruta(m,n,N,instance,0,[],0)
-     
-	# Calcular el error total
-	# = sum(calcular_error(best['sol'][i], best['sol'][i + 1], instance)[0] for i in range(len(best['sol']) - 1))
+    # Sort and pick top 5 combinations based on error
+    top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
 
-	# Represetnamos la solucion con un diccionario que indica:
-	# - n: cantidad de breakpoints
-	# - x: lista con las coordenadas de la abscisa para cada breakpoint
-	# - y: lista con las coordenadas de la ordenada para cada breakpoint
-	solution = {}
-	solution['n'] = len(best['sol'])
-	solution['x'] = [grid_x[x[0]] for x in best['sol']]
-	solution['y'] = [grid_y[x[1]] for x in best['sol']]
-	solution['obj'] = best['obj']
+    print("Top 5 Combinaciones:")
+    for idx, (comb, error) in enumerate(top_combinaciones, 1):
+        print(f"{idx}: {comb} con error: {error}")
 
-	# Se guarda el archivo en formato JSON
-	with open('solution_' + instance_name, 'w') as f:
-		json.dump(solution, f)
+    # Extract the best combination
+    best_combination, min_error = top_combinaciones[0]
+
+    # Convert breakpoint indices to actual coordinates for the best combination
+    best_x = [grid_x[x[0]] for x in best_combination]
+    best_y = [grid_y[y[1]] for y in best_combination]
+
+    # Construct the solution dictionary
+    solution = {
+        'n': len(best_combination),
+        'x': best_x,
+        'y': best_y,
+        'obj': min_error
+    }
+
+    # Display the best solution
+    print('\nBest Solution:', solution)
+
+    # Export the best solution to a JSON file
+    solution_filename = f'solution_{instance_name}'
+    with open(solution_filename, 'w') as f:
+        json.dump(solution, f)
+    print(f'Solution exported to {solution_filename}')
 
 if __name__ == "__main__":
-	main()
+    main()
