@@ -23,6 +23,7 @@ def calcular_error(a: tuple, b: tuple, grid_x, grid_y, instance):
 
 def fuerza_bruta(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y):
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
+    print(bp)
     if len(bp) == N:
         combinaciones[tuple(bp)] = round(error_total, 3)
         return bp, error_total, combinaciones
@@ -32,21 +33,21 @@ def fuerza_bruta(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, g
         # Verifica si aún se pueden agregar breakpoints.
         if not bp or i < m:
             # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
-            next_i = i if not bp else min(i + 1, m)  
+            next_i = i if not bp else min(i + 1, m)
 
-            # Crea una nueva lista de puntos de ruptura añadiendo el punto actual (next_i, j).
+            # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
             new_bp = bp + [(next_i, j)]
 
-            # Si ya hay puntos de ruptura, calcula el error con el nuevo punto.
+            # Si ya hay breakpoints, calcula el error con el nuevo punto.
             if bp:
                 error = calcular_error(bp[-1], (next_i, j), grid_x, grid_y, instance)
-                # Llama recursivamente para agregar el próximo punto de ruptura con el nuevo error total.
+                # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
                 fuerza_bruta(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y)
             else:
-                # Si es el primer punto de ruptura, llama recursivamente sin añadir error.
+                # Si es el primer breakpoint, llama recursivamente sin añadir error.
                 fuerza_bruta(m, n, N, instance, next_i, new_bp, error_total, combinaciones, grid_x, grid_y)
 
-    # Retorna la lista actual de puntos de ruptura, el error total acumulado y el diccionario de combinaciones probadas.
+    # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas.
     return bp, error_total, combinaciones
 
 
