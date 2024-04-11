@@ -1,12 +1,13 @@
 import json
 import numpy as np
 import os
+import time
 
 from fuerzaBruta import *
 from graphing import plot_graph
 
 def main():
-    files = ['aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json']
+    files = ['aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json']
     for filename in files:
         # Load instance from JSON
         instance_name = filename
@@ -14,22 +15,33 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
 
-        m, n, N = 6, 6, 5
+        m, n, N = 7, 7, 6
 
-        # Generate grid
+        # generamos la grillas
         grid_x = np.linspace(min(instance["x"]), max(instance["x"]), num=m, endpoint=True)
         grid_y = np.linspace(min(instance["y"]), max(instance["y"]), num=n, endpoint=True)
+
 
         combinaciones = {}
         fuerza_bruta(m, n, N, instance, 0, [], 0, combinaciones, grid_x, grid_y)
 
+        start_time = time.time()
         # Sort and pick top 5 combinations based on error
         top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
+        end_time = time.time()
+        ejecucion = end_time - start_time
+        print(f'El tiempo de ejecucion de {instance_name} fue de {ejecucion}.')
 
-        print("Top 5 Combinaciones:")
+        start_time = time.time()
+        print(f"Top 5 Combinaciones de {len(combinaciones)}:")
         for idx, (comb, error) in enumerate(top_combinaciones, 1):
             print(f"{idx}: {comb} con error: {error}")
+        end_time = time.time()
+        ordenamiento = (end_time - start_time)*1000
+        
+        print(f'El tiempo de ordenamiento de {instance_name} fue de {ordenamiento}.')
 
+        
         # Extract the best combination
         best_combination, min_error = top_combinaciones[0]
 

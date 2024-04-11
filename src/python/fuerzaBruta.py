@@ -23,7 +23,6 @@ def calcular_error(a: tuple, b: tuple, grid_x, grid_y, instance):
 
 def fuerza_bruta(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y):
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
-    print(bp)
     if len(bp) == N and bp[-1][0] == m-1:
         combinaciones[tuple(bp)] = round(error_total, 3)
         return bp, error_total, combinaciones
