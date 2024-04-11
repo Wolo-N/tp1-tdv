@@ -2,52 +2,49 @@ import json
 import numpy as np
 
 def calcular_error(a: tuple, b: tuple, grid_x, grid_y, instance):
-    # Inicializa el error acumulado a 0.
     error = 0
-    
-    # Extrae las coordenadas x e y para el punto a y b usando los índices de a en las grillas grid_x y grid_y.
     ax, ay = grid_x[a[0]], grid_y[a[1]]
     bx, by = grid_x[b[0]], grid_y[b[1]]
-    
-    # Itera sobre cada punto x en el conjunto de datos.
     for i, x in enumerate(instance["x"]):
-        # Si el punto actual x está entre ax y bx...
         if ax <= x <= bx:
-            # Calculamos el valor de y predicho por la recta que pasa por a y b.
             predicted_y = ((by - ay) / (bx - ax)) * (x - ax) + ay
-            # Acumulamos el error absoluto entre el y predicho y el y real para este punto.
             error += abs(instance["y"][i] - predicted_y)
-    
-    # Devuelve el error total acumulado para todos los puntos en el rango de interés.
     return error
 
+def calcular_pendiente(a: tuple, b: tuple, grid_x, grid_y):
+    ax, ay = grid_x[a[0]], grid_y[a[1]]
+    bx, by = grid_x[b[0]], grid_y[b[1]]
+    if bx - ax == 0:  # Evitar división por cero
+        return float('inf')  # Consideramos pendiente infinita
+    return (by - ay) / (bx - ax)
+
+
 def fuerza_bruta(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y):
-    # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
     if len(bp) == N:
-        combinaciones[tuple(bp)] = round(error_total, 3)
+        combinaciones[tuple(bp)] = error_total
         return bp, error_total, combinaciones
 
-    # Itera sobre todas las posibles posiciones y para el próximo breakpoint.
     for j in range(n):
-        # Verifica si aún se pueden agregar breakpoints.
-        if not bp or i < m:
-            # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
-            next_i = i if not bp else min(i + 1, m)  
+        next_i = i + 1 if bp else i
 
-            # Crea una nueva lista de puntos de ruptura añadiendo el punto actual (next_i, j).
+        if next_i < m:
             new_bp = bp + [(next_i, j)]
-
-            # Si ya hay puntos de ruptura, calcula el error con el nuevo punto.
-            if bp:
+            if len(bp) > 1:  # Verifica si hay al menos dos puntos para comparar pendientes
+                pendiente_actual = calcular_pendiente(bp[-2], bp[-1], grid_x, grid_y)
+                pendiente_nueva = calcular_pendiente(bp[-1], (next_i, j), grid_x, grid_y)
+                if pendiente_actual != pendiente_nueva:  # Si la pendiente cambia, añade el punto
+                    error = calcular_error(bp[-1], (next_i, j), grid_x, grid_y, instance)
+                    fuerza_bruta(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y)
+            elif len(bp) == 1:  # Solo hay un punto, así que añade el nuevo sin comparar
                 error = calcular_error(bp[-1], (next_i, j), grid_x, grid_y, instance)
-                # Llama recursivamente para agregar el próximo punto de ruptura con el nuevo error total.
                 fuerza_bruta(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y)
-            else:
-                # Si es el primer punto de ruptura, llama recursivamente sin añadir error.
+            elif len(bp) == 0:  # El primer punto no agrega error
                 fuerza_bruta(m, n, N, instance, next_i, new_bp, error_total, combinaciones, grid_x, grid_y)
+        elif len(bp) > 0 and i < m:
+            fuerza_bruta(m, n, N, instance, next_i, bp, error_total, combinaciones, grid_x, grid_y)
 
-    # Retorna la lista actual de puntos de ruptura, el error total acumulado y el diccionario de combinaciones probadas.
     return bp, error_total, combinaciones
+
 
 
 def main():
@@ -87,6 +84,7 @@ def main():
         'y': best_y,
         'obj': min_error
     }
+
     # Display the best solution
     print('\nBest Solution:', solution)
 
@@ -98,3 +96,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

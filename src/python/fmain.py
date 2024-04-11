@@ -16,7 +16,7 @@ def encontrar_minimo(candidatos: list[tuple[list[tuple],int]]):
 		lista_errores.append(x[1])
 	return lista_errores.index(min(lista_errores))
 
-def fuerza_bruta(m:int ,n:int ,N:int ,instance: json,i: int,bp: list, error_total: float):
+def fuerza_bruta(m:int, n:int, N:int, instance:json, i: int, bp: list, error_total: float):
 	if N == 0: # Breakpoints
 		return bp, error_total
 	if i == n:
