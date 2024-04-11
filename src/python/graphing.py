@@ -16,11 +16,6 @@ def plot_graph(instancia, m, n, N):
     in_file = 'data/' + instancia
     solution_file = 'data/' + 'solution_' + instancia
 
-    # parametros basicos
-    m = 6
-    n = 6
-    N = 5
-
     with open(in_file) as json_file:
         data = json.load(json_file)
 

@@ -1,56 +1,66 @@
 import json
 import numpy as np
+import os
+
 from fuerzaBruta import *
 from graphing import plot_graph
 
 def main():
-    # Load instance from JSON
-    instance_name = "aspen_simulation.json"
-    filename = "data/" + instance_name
-    with open(filename) as f:
-        instance = json.load(f)
+    files = ['aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json']
+    for filename in files:
+        # Load instance from JSON
+        instance_name = filename
+        filename = "data/" + instance_name
+        with open(filename) as f:
+            instance = json.load(f)
 
-    m, n, N = 6, 6, 5
+        m, n, N = 6, 6, 5
 
-     # Generate grid
-    grid_x = np.linspace(min(instance["x"]), max(instance["x"]), num=m, endpoint=True)
-    grid_y = np.linspace(min(instance["y"]), max(instance["y"]), num=n, endpoint=True)
+        # Generate grid
+        grid_x = np.linspace(min(instance["x"]), max(instance["x"]), num=m, endpoint=True)
+        grid_y = np.linspace(min(instance["y"]), max(instance["y"]), num=n, endpoint=True)
 
-    combinaciones = {}
-    fuerza_bruta(m, n, N, instance, 0, [], 0, combinaciones, grid_x, grid_y)
+        combinaciones = {}
+        fuerza_bruta(m, n, N, instance, 0, [], 0, combinaciones, grid_x, grid_y)
 
-    # Sort and pick top 5 combinations based on error
-    top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
+        # Sort and pick top 5 combinations based on error
+        top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
 
-    print("Top 5 Combinaciones:")
-    for idx, (comb, error) in enumerate(top_combinaciones, 1):
-        print(f"{idx}: {comb} con error: {error}")
+        print("Top 5 Combinaciones:")
+        for idx, (comb, error) in enumerate(top_combinaciones, 1):
+            print(f"{idx}: {comb} con error: {error}")
 
-     # Extract the best combination
-    best_combination, min_error = top_combinaciones[0]
+        # Extract the best combination
+        best_combination, min_error = top_combinaciones[0]
 
-    # Convert breakpoint indices to actual coordinates for the best combination
-    best_x = [grid_x[x[0]] for x in best_combination]
-    best_y = [grid_y[y[1]] for y in best_combination]
+        # Convert breakpoint indices to actual coordinates for the best combination
+        best_x = [grid_x[x[0]] for x in best_combination]
+        best_y = [grid_y[y[1]] for y in best_combination]
 
-    # Construct the solution dictionary
-    solution = {
-        'n': len(best_combination),
-        'x': best_x,
-        'y': best_y,
-        'obj': min_error
-    }
-    # Display the best solution
-    print('\nBest Solution:', solution)
+        # Construct the solution dictionary
+        solution = {
+            'n': len(best_combination),
+            'x': best_x,
+            'y': best_y,
+            'obj': min_error
+        }
+        # Display the best solution
+        print('\nBest Solution:', solution)
 
-    # Export the best solution to a JSON file
-    solution_filename = f'solution_{instance_name}'
-    with open(solution_filename, 'w') as f:
-        json.dump(solution, f)
-    print(f'Solution exported to {solution_filename}')
+    # Asegúrate de que el directorio exista
+        solution_directory = 'data/solutions'
+        if not os.path.exists(solution_directory):
+            os.makedirs(solution_directory)
 
-    plot_graph(instance_name, m, n, N)
-    
-    
+        solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
+        try:
+            with open(solution_filename, 'w') as f:
+                json.dump(solution, f)
+            print(f'Solution exported to {solution_filename}')
+        except Exception as e:
+            print(f"Error al guardar la solución: {e}")
+
+        plot_graph(instance_name, m, n, N)
+
 if __name__ == "__main__":
     main()
