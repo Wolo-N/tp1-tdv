@@ -25,6 +25,9 @@ def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones,
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
     if len(bp) == N and bp[-1][0] == m-1:
         combinaciones[tuple(bp)] = round(error_total, 3)
+        if ((0, 0), (1, 0), (3, 1), (4, 2), (5, 3)) in combinaciones:
+            error = combinaciones[((0, 0), (1, 0), (3, 1), (4, 2), (5, 3))]
+            print(f'estoy y mi error es {error}')
         return bp, error_total, combinaciones
     '''
     if len(bp) == N :
