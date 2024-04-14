@@ -90,5 +90,5 @@ def backtracking(m, n, N, instance):
         'obj': minimum_error
     }
 
-    return solution
+    return solution, minimum_error
 

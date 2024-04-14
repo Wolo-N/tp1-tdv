@@ -15,13 +15,13 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
 
-        m = 7
-        n = 7
-        N = 7
+        m = 6
+        n = 6
+        N = 5
 
         start_time = time.time()
 
-        solution = backtracking(m, n, N, instance)
+        solution, min_error = backtracking(m, n, N, instance)
 
         end_time = time.time()
         excecution_time = end_time - start_time
@@ -39,7 +39,7 @@ def main():
         except Exception as e:
             print(f"Error al guardar la solución: {e}")
 
-        plot_graph(instance_name, m, n, N)
+        plot_graph(instance_name, m, n, N, excecution_time, min_error)
 
 if __name__ == "__main__":
     main()
