@@ -26,11 +26,7 @@ def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones,
     if len(bp) == N and bp[-1][0] == m-1:
         combinaciones[tuple(bp)] = round(error_total, 3)
         return bp, error_total, combinaciones
-    '''
-    if len(bp) == N :
-        combinaciones[tuple(bp)] = 10000000
-        return bp, error_total, combinaciones
-    '''
+
     if not bp:
         # Si es el primer breakpoint, llama recursivamente sin añadir error.
         for z in range(m):
@@ -83,5 +79,5 @@ def fuerza_bruta(m, n, N, instance):
         'obj': min_error
     }
 
-    return solution
+    return solution, min_error
 

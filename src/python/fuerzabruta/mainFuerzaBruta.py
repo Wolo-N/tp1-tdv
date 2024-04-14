@@ -19,7 +19,12 @@ def main():
         n = 6
         N = 5
 
+        start_time = time.time()
+
         solution = fuerza_bruta(m, n, N, instance)
+
+        end_time = time.time()
+        excecution_time = end_time - start_time
 
         # Asegúrate de que el directorio exista
         solution_directory = 'data/solutions'

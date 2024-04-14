@@ -11,7 +11,7 @@ def plot_pwl(solution, color='g'):
 def plot_data(data, color='k'):
     plt.plot(data['x'], data['y'],'.', color=color)
 
-def plot_graph(instancia, m, n, N):
+def plot_graph(instancia, m, n, N, excecution_time, min_error):
     # input file
     in_file = 'data/' + instancia
     solution_file = 'data/solutions/' + 'solution_' + instancia
@@ -30,6 +30,7 @@ def plot_graph(instancia, m, n, N):
     plt.xticks(grid_x)
     plt.yticks(grid_y)
     plt.title(instancia)
+    plt.suptitle(excecution_time, min_error)
 
     #Graficamos datos y linea
     plot_data(data)
