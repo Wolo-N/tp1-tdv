@@ -71,26 +71,16 @@ def programacion_dinamica(m, n, N, instance):
     
     combinaciones = {}
     # Inicializa la matriz F con valores negativos para indicar que el error entre dos puntos de ruptura aún no se ha calculado.
-    F = np.full((m, n, m, n), -1, dtype=float)
-    programacion_dinamica_recursiva(m, n, N, instance, 0, [], 0, combinaciones, grid_x, grid_y, F)
+    F = np.empty((m, n, m, n), dtype=float)
+    for i in range(m):
+        for j in range(n):
+            for k in range(m):
+                for l in range(n):
+                    F[i, j, k, l] = -1
+    _, _, _, errores_reutilizados = programacion_dinamica_recursiva(m, n, N, instance, 0, [], 0, combinaciones, grid_x, grid_y, F)
 
-    # Imprimir la matriz F con etiquetas para las coordenadas
-    print("Matriz F:")
-    print(" " * 6, end="")
-    for y1 in range(n):
-        print(f"({grid_y[y1]:.2f})", end=" " * 3)
-    print()
-    print("-" * (6 + 7 * n))
-    for x1 in range(m):
-        print(f"({grid_x[x1]:.2f}) |", end=" ")
-        for y1 in range(n):
-            print("|", end="")
-            for x2 in range(m):
-                for y2 in range(n):
-                    print(f"{F[x1, y1, x2, y2]:<7.2f}", end=" ")
-            print("|", end="")
-        print()
-    print()
+    # Imprimir la cantidad de errores reutilizados
+    print("Cantidad de Errores Reutilizados:", errores_reutilizados)
 
     # REVISAR
     top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
@@ -116,3 +106,19 @@ def programacion_dinamica(m, n, N, instance):
     return solution
 
 
+"""print("Matriz F:")
+    print(" " * 6, end="")
+    for y1 in range(n):
+        print(f"({grid_y[y1]:.2f})", end=" " * 3)
+    print()
+    print("-" * (6 + 7 * n))
+    for x1 in range(m):
+        print(f"({grid_x[x1]:.2f}) |", end=" ")
+        for y1 in range(n):
+            print("|", end="")
+            for x2 in range(m):
+                for y2 in range(n):
+                    print(f"{F[x1, y1, x2, y2]:<7.2f}", end=" ")
+            print("|", end="")
+        print()
+    print()"""
