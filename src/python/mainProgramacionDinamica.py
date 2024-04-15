@@ -7,7 +7,8 @@ from programaciondinamica import programacion_dinamica
 from graphing import plot_graph
 
 def main():
-    files = ['aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json']
+    files = ['aspen_simulation.json']
+    # , 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json'
     for filename in files:
         # Load instance from JSON
         instance_name = filename

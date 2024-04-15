@@ -22,20 +22,16 @@ def calcular_error(a: tuple, b: tuple, grid_x, grid_y, instance):
     return error
 
 def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y, F):
-    # Variable para contar la cantidad de errores reutilizados desde la matriz F
-    errores_reutilizados = 0
-
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
     if len(bp) == N and bp[-1][0] == m-1:
         combinaciones[tuple(bp)] = round(error_total, 3)
-        return bp, error_total, combinaciones, errores_reutilizados
+        return bp, error_total, combinaciones
     
     if not bp:
         # Si es el primer breakpoint, llama recursivamente sin añadir error.
         for z in range(m):
             new_bp = [(0,z)]
-            _, _, _, reused = programacion_dinamica_recursiva(m, n, N, instance, 0, new_bp, error_total, combinaciones, grid_x, grid_y, F)
-            errores_reutilizados += reused
+            programacion_dinamica_recursiva(m, n, N, instance, 0, new_bp, error_total, combinaciones, grid_x, grid_y, F)
     # Itera sobre todas las posibles posiciones y para el próximo breakpoint.
     for j in range(m):
         # Verifica si aún se pueden agregar breakpoints.
@@ -53,16 +49,16 @@ def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combi
                 # Consulta la matriz F para ver si el error entre estos dos puntos ya se calculó.
                 if F[bp1[0], bp1[1], bp2[0], bp2[1]] != -1:
                     error = F[bp1[0], bp1[1], bp2[0], bp2[1]]
-                    errores_reutilizados += 1  # Incrementa el contador de errores reutilizados
+                    print(f"Utilizando valor previamente calculado de F[{bp1[0]},{bp1[1]},{bp2[0]},{bp2[1]}]: {error}")
                 else:
                     error = calcular_error(bp1, bp2, grid_x, grid_y, instance)
                     # Almacena el error calculado en la matriz F para futuras consultas.
                     F[bp1[0], bp1[1], bp2[0], bp2[1]] = error
+                    print(f"Calculando nuevo valor de F[{bp1[0]},{bp1[1]},{bp2[0]},{bp2[1]}]: {error}")
                 # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
-                _, _, _, reused = programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y, F)
-                errores_reutilizados += reused
+                _, _, _, = programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y, F)
     # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas, y la cantidad de errores reutilizados.
-    return bp, error_total, combinaciones, errores_reutilizados
+    return bp, error_total, combinaciones
 
 
 def programacion_dinamica(m, n, N, instance):
@@ -77,12 +73,8 @@ def programacion_dinamica(m, n, N, instance):
             for k in range(m):
                 for l in range(n):
                     F[i, j, k, l] = -1
-    _, _, _, errores_reutilizados = programacion_dinamica_recursiva(m, n, N, instance, 0, [], 0, combinaciones, grid_x, grid_y, F)
+    _, _, _, = programacion_dinamica_recursiva(m, n, N, instance, 0, [], 0, combinaciones, grid_x, grid_y, F)
 
-    # Imprimir la cantidad de errores reutilizados
-    print("Cantidad de Errores Reutilizados:", errores_reutilizados)
-
-    # REVISAR
     top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
     
     print("Top 5 Combinaciones")
@@ -91,6 +83,14 @@ def programacion_dinamica(m, n, N, instance):
         # Extraer la mejor combinación
     best_combination, min_error = top_combinaciones[0]
     
+    # Imprime la matriz final F
+    print("Matriz Final F:")
+    for i in range(m):
+        for j in range(n):
+            for k in range(m):
+                for l in range(n):
+                    print(f"F[{i},{j},{k},{l}]: {F[i,j,k,l]}")
+
     # Convertir los índices de punto de ruptura en coordenadas reales para la mejor combinación
     best_x = [grid_x[x[0]] for x in best_combination]
     best_y = [grid_y[y[1]] for y in best_combination]
@@ -104,21 +104,3 @@ def programacion_dinamica(m, n, N, instance):
     }
 
     return solution
-
-
-"""print("Matriz F:")
-    print(" " * 6, end="")
-    for y1 in range(n):
-        print(f"({grid_y[y1]:.2f})", end=" " * 3)
-    print()
-    print("-" * (6 + 7 * n))
-    for x1 in range(m):
-        print(f"({grid_x[x1]:.2f}) |", end=" ")
-        for y1 in range(n):
-            print("|", end="")
-            for x2 in range(m):
-                for y2 in range(n):
-                    print(f"{F[x1, y1, x2, y2]:<7.2f}", end=" ")
-            print("|", end="")
-        print()
-    print()"""
