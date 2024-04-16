@@ -7,7 +7,7 @@ from programaciondinamica import programacion_dinamica
 from graphing import plot_graph
 
 def main():
-    files = ['aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json']
+    files = ['titanium.json', 'ethanol_water_vle.json', 'aspen_simulation.json', 'optimistic_instance.json', 'toy_instance.json']
     for filename in files:
         # Load instance from JSON
         instance_name = filename
@@ -18,9 +18,16 @@ def main():
         m = 6
         n = 6
         N = 5
+        
+        start_time = time.time()
 
         # Obtener la solución utilizando programacion_dinamica
-        solution = programacion_dinamica(m, n, N, instance)
+        solution, min_error = programacion_dinamica(m, n, N, instance)
+        print(solution)
+
+        end_time = time.time()
+        excecution_time = end_time - start_time
+        print(excecution_time)
 
         # Asegúrate de que el directorio exista
         solution_directory = 'data/solutions'
@@ -35,7 +42,7 @@ def main():
         except Exception as e:
             print(f"Error al guardar la solución: {e}")
 
-        plot_graph(instance_name, m, n, solution)
+        plot_graph(instance_name, m, n, solution, excecution_time, min_error)
 
 if __name__ == "__main__":
     main()
