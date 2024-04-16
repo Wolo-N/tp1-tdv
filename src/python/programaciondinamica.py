@@ -21,87 +21,82 @@ def calcular_error(a: tuple, b: tuple, grid_x, grid_y, instance):
     # Devuelve el error total acumulado para todos los puntos en el rango de interés.
     return error
 
-def programacion_dinamica_recursiva(m, n, N, instance, i, j, bp, combinaciones, grid_x, grid_y, F):
-    # Verifica si ya se calculó el error para estos dos puntos.
-    if F[i, j] != -1:
-        return F[i, j], combinaciones
-    
-    # Caso base: si se ha llegado a la última columna, devuelve un error mínimo igual a cero y una combinación vacía.
-    if j == n - 1:
-        return 0, {}
+def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combinaciones, memoria, grid_x, grid_y):
+    # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
+    if len(bp) == N and bp[-1][0] == m-1:
+        combinaciones[tuple(bp)] = round(error_total, 3)
+        #print(combinaciones)
+        return bp, error_total, combinaciones
 
-    # Caso base: si se han alcanzado N breakpoints, devuelve el error total y la combinación de breakpoints.
-    if len(bp) == N:
-        return 0, {tuple(bp): 0}
+
+    if not bp:
+        # Si es el primer breakpoint, llama recursivamente sin añadir error.
+        for z in range(m):
+            new_bp = [(0,z)]
+            programacion_dinamica_recursiva(m, n, N, instance, 0, new_bp, error_total,combinaciones, memoria, grid_x, grid_y)
+
     
-    # Inicializa el error mínimo como infinito.
-    min_error = float('inf')
-    min_combinations = {}
-    
-    # Explora todas las posibles posiciones para el próximo breakpoint.
-    for k in range(i+1, m):
-        for l in range(n):
-            # Calcula el error entre el breakpoint actual y el siguiente.
-            error = calcular_error((i, j), (k, l), grid_x, grid_y, instance)
-            # Llama recursivamente para explorar la siguiente combinación de breakpoints.
-            next_error, next_combinations = programacion_dinamica_recursiva(m, n, N, instance, k, l, bp + [(k, l)], combinaciones, grid_x, grid_y, F)
-            # Actualiza el error mínimo.
-            if error + next_error < min_error:
-                min_error = error + next_error
-                min_combinations = next_combinations
-    
-    # Llama recursivamente para explorar la siguiente columna sin agregar ningún breakpoint.
-    next_error, next_combinations = programacion_dinamica_recursiva(m, n, N, instance, i, j + 1, bp, combinaciones, grid_x, grid_y, F)
-    
-    # Actualiza el error mínimo si es menor que el error actual.
-    if next_error < min_error:
-        min_error = next_error
-        min_combinations = next_combinations
-    
-    # Almacena el error mínimo para estos dos puntos en la matriz F.
-    F[i, j] = min_error
-    
-    # Agrega la combinación actual a las combinaciones almacenadas.
-    for comb in min_combinations:
-        combinaciones[comb] = min_error
-    
-    return min_error, combinaciones
+    # Itera sobre todas las posibles posiciones y para el próximo breakpoint.
+    for j in range(m):
+        # Verifica si aún se pueden agregar breakpoints.
+        for k in range(i+1,n):
+            # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
+            next_i = k if not bp else min(k, m)
+
+            # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
+            new_bp = bp + [(next_i, j)]
+            
+            
+            # Si ya hay breakpoints, calcula el error con el nuevo punto.
+            if bp:
+                error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
+                if (str(next_i)+","+str(j)) in memoria:
+                    if memoria[str(next_i)+","+str(j)] > error_total + error:
+                        memoria[str(next_i)+","+str(j)] = error_total + error
+                        programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+                    elif(memoria[str(next_i)+","+str(j)] == error_total + error):
+                        programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+                else:
+                    memoria[str(next_i)+","+str(j)] = error_total + error
+                    programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+
+                # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
+                
+                
+
+
+    # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas.
+    return bp, error_total, combinaciones
+
+
 
 def programacion_dinamica(m, n, N, instance):
     grid_x = np.linspace(min(instance["x"]), max(instance["x"]), num=m, endpoint=True)
     grid_y = np.linspace(min(instance["y"]), max(instance["y"]), num=n, endpoint=True)
     
+    memoria = {}
     combinaciones = {}
-    # Inicializa la matriz F con valores negativos para indicar que el error entre dos puntos de ruptura aún no se ha calculado.
-    F = np.empty((m, n), dtype=float)
-    F.fill(-1)
+    programacion_dinamica_recursiva(m, n, N, instance, 0, [], 0,combinaciones, memoria, grid_x, grid_y)
+
+    # REVISAR
+    top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
     
-    # Comienza la recursión desde la primera columna.
-    for j in range(n):
-        programacion_dinamica_recursiva(m, n, N, instance, 0, j, [(0, j)], combinaciones, grid_x, grid_y, F)
+    print(f"Top 5 Combinaciones de {len(memoria)}:")
+    for idx, (comb, error) in enumerate(top_combinaciones, 1):
+        print(f"{idx}: {comb} con error: {error}")
+        # Extract the best combination
+    best_combination, min_error = top_combinaciones[0]
 
-    # Verifica si se encontraron combinaciones válidas.
-    if combinaciones:
-        # Extrae la combinación con el menor error total.
-        best_combination = min(combinaciones, key=combinaciones.get)
-        min_error = combinaciones[best_combination]
+    # Convert breakpoint indices to actual coordinates for the best combination
+    best_x = [grid_x[x[0]] for x in best_combination]
+    best_y = [grid_y[y[1]] for y in best_combination]
 
-        # Convertir los índices de punto de ruptura en coordenadas reales para la mejor combinación.
-        best_x = [grid_x[x[0]] for x in best_combination]
-        best_y = [grid_y[y[1]] for y in best_combination]
+        # Construct the solution dictionary
+    solution = {
+        'n': len(best_combination),
+        'x': best_x,
+        'y': best_y,
+        'obj': min_error
+    }
 
-        # Construir el diccionario de solución.
-        solution = {
-            'n': len(best_combination),
-            'x': best_x,
-            'y': best_y,
-            'obj': min_error
-        }
-    else:
-        # Si no se encontraron combinaciones válidas, devuelve un mensaje de error.
-        solution = {
-            'error': 'No se encontraron combinaciones válidas.'
-        }
-
-    return solution
-
+    return solution, min_error

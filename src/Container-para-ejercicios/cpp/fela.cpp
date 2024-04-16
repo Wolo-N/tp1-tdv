@@ -12,18 +12,22 @@ using namespace std;
 
 // Para libreria de JSON.
 using namespace nlohmann;
-float mapValue(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
+float mapValue(float value, float fromLow, float fromHigh, float toLow, float toHigh)
+{
     return (value - fromLow) / (fromHigh - fromLow) * (toHigh - toLow) + toLow;
 }
-float calcular_error(tuple<int,int> a, tuple<int,int> b, json instance,int n,int m){
-    float AX = mapValue(get<0>(a), 0, n-1, instance["x"][0], instance["x"][int(instance["n"])-1]);
-    float BX = mapValue(get<0>(b), 0, n-1, instance["x"][0], instance["x"][int(instance["n"])-1]);
-    float AY = mapValue(get<1>(a), 0, m-1, instance["y"][0], instance["y"][int(instance["n"])-1]);
-    float BY = mapValue(get<1>(b), 0, m-1, instance["y"][0], instance["y"][int(instance["n"])-1]);
+float calcular_error(tuple<int, int> a, tuple<int, int> b, json instance, int n, int m)
+{
+    float AX = mapValue(get<0>(a), 0, n - 1, instance["x"][0], instance["x"][int(instance["n"]) - 1]);
+    float BX = mapValue(get<0>(b), 0, n - 1, instance["x"][0], instance["x"][int(instance["n"]) - 1]);
+    float AY = mapValue(get<1>(a), 0, m - 1, instance["y"][0], instance["y"][int(instance["n"]) - 1]);
+    float BY = mapValue(get<1>(b), 0, m - 1, instance["y"][0], instance["y"][int(instance["n"]) - 1]);
 
     float error = 0;
-    for(int i = 0; i < instance["n"]; i++){
-        if(AX <= instance["x"][i] && instance["x"][i] <= BX){
+    for (int i = 0; i < instance["n"]; i++)
+    {
+        if (AX <= instance["x"][i] && instance["x"][i] <= BX)
+        {
             float predicted_y = ((BY - AY) / (BX - AX)) * (float(instance["x"][i]) - AX) + AY;
             error += abs(float(instance["y"][i]) - predicted_y);
         }
@@ -31,55 +35,87 @@ float calcular_error(tuple<int,int> a, tuple<int,int> b, json instance,int n,int
     return error;
 }
 
-map<vector<tuple<int,int>>,float> fuerza_bruta_recursiva(int n, int m, int N, json instance, int i , vector<tuple<int,int>> bp, float error_total, map<vector<tuple<int,int>>,float> &combinaciones){
-    cout<<"recursion"<<endl;
-    if(bp.size() == N && get<0>(bp[bp.size()-1]) == m-1){
-    
+map<vector<tuple<int, int>>, float> fuerza_bruta_recursiva(int n, int m, int N, json instance, int i, vector<tuple<int, int>> bp, float error_total, map<vector<tuple<int, int>>, float> &combinaciones)
+{
+
+    if (bp.size() == N && get<0>(bp[bp.size() - 1]) == m - 1)
+    {
         combinaciones[bp] = error_total;
+        return combinaciones;
     }
-    if(bp.size()==0){
-        for(int z = 0; z < m; z++){
-            vector<tuple<int,int>> new_bp = {make_tuple(0,z)};
-            fuerza_bruta_recursiva(m,n,N,instance,0,new_bp,error_total,combinaciones);
+
+    if (bp.size() == 0)
+    {
+        cout << "recursion" << endl;
+
+        for (int z = 0; z < m; z++)
+        {
+            vector<tuple<int, int>> new_bp = {make_tuple(0, z)};
+            fuerza_bruta_recursiva(m, n, N, instance, 0, new_bp, error_total, combinaciones);
         }
-    for(int j = 0; j < m; j++){
-        for(int k = i+1; k < n; k++){
-            vector<tuple<int,int>> new_bp = bp;
-            new_bp.push_back(make_tuple(k,j));
-            if(bp.size()!=0){
-                float error = calcular_error(bp[bp.size()-1], make_tuple(k,j),instance, n,m);
-                fuerza_bruta_recursiva(m, n, N, instance, k , new_bp, error_total + error, combinaciones);
+    }
+    else
+    {
+        for (int j = 0; j < m; j++)
+        {
+            for (int k = i + 1; k < n; k++)
+            {
+
+                vector<tuple<int, int>> new_bp = bp;
+                new_bp.push_back(make_tuple(k, j));
+                float error = calcular_error(bp[bp.size() - 1], make_tuple(k, j), instance, n, m);
+
+                auto min_it = combinaciones.begin();
+                for (auto it = combinaciones.begin(); it != combinaciones.end(); ++it)
+                {
+                    if (it->second < min_it->second)
+                    {
+                        min_it = it;
+                    }
+                }
+                fuerza_bruta_recursiva(m, n, N, instance, k, new_bp, error_total + error, combinaciones);
             }
-            
         }
-    }
     }
     return combinaciones;
 }
 
-pair<vector<tuple<int, int>>, float>fuerza_bruta(int n, int m, int N, json instance){
-    
-   //map<vector<tuple<int,int>>,float> combinaciones = {};
-    //fuerza_bruta_recursiva(n,m,N,instance,0, {}, 0.0 , combinaciones);
-    //for (auto it = combinaciones.begin(); it != combinaciones.end(); ++it) {
-    //#include <algorithm> // para std::min_element
+pair<vector<tuple<int, int>>, float> fuerza_bruta(int n, int m, int N, json instance)
+{
 
-    map<vector<tuple<int,int>>,float> combinaciones = {};
-    fuerza_bruta_recursiva(n,m,N,instance,0, {}, 0.0 , combinaciones);
+    // map<vector<tuple<int,int>>,float> combinaciones = {};
+    // fuerza_bruta_recursiva(n,m,N,instance,0, {}, 0.0 , combinaciones);
+    // for (auto it = combinaciones.begin(); it != combinaciones.end(); ++it) {
+    // #include <algorithm> // para std::min_element
+
+    map<vector<tuple<int, int>>, float> combinaciones = {};
+    fuerza_bruta_recursiva(n, m, N, instance, 0, {}, 0.0, combinaciones);
 
     auto min_it = combinaciones.begin();
-    for (auto it = combinaciones.begin(); it != combinaciones.end(); ++it) {
-        if (it->second < min_it->second) {
+    for (auto it = combinaciones.begin(); it != combinaciones.end(); ++it)
+    {
+        if (it->second < min_it->second)
+        {
             min_it = it;
         }
     }
 
-    return *min_it; // devuelve el par clave-valor con el valor mínimo
-    
-}
-int main(int argc, char** argv) {
+    const auto &key = min_it->first;
+    const float &value = min_it->second;
 
-    string instance_name = "data/titanium.json";
+    cout << "Key: ";
+    for (const auto &tup : key)
+    {
+        cout << "(" << get<0>(tup) << ", " << get<1>(tup) << "), ";
+    }
+
+    cout << " Value: " << value << endl;
+
+    return *min_it; // devuelve el par clave-valor con el valor mínimo
+}
+int main(int argc, char **argv)
+{
+    string instance_name = "/workspaces/tp1-tdv/data/titanium.json";
     cout << "Reading file " << instance_name << endl;
     ifstream input(instance_name);
 
@@ -92,16 +128,16 @@ int main(int argc, char** argv) {
     int n = 6;
     int N = 5;
 
-    //float prueba = calcular_error(make_tuple(0,0), make_tuple(2,0), instance,6,6);
-    //cout << prueba << endl;
-    //cout << K << endl;
+    // float prueba = calcular_error(make_tuple(0,0), make_tuple(2,0), instance,6,6);
+    // cout << prueba << endl;
+    // cout << K << endl;
 
     // Aca empieza la magia.
 
     // Ejemplo para guardar json.
     // Probamos guardando el mismo JSON de instance, pero en otro archivo.
 
-    std::pair<std::vector<std::tuple<int, int>>, float> minimo = fuerza_bruta(n,m,N,instance);
+    pair<vector<tuple<int, int>>, float> minimo = fuerza_bruta(n, m, N, instance);
 
     // Crea un objeto json
     nlohmann::json j;
@@ -111,10 +147,11 @@ int main(int argc, char** argv) {
     j["obj"] = minimo.second;
 
     // Divide el vector de tuplas en dos vectores x e y
-    std::vector<float> x, y;
-    for (const auto& tup : minimo.first) {
-        x.push_back(std::get<0>(tup));
-        y.push_back(std::get<1>(tup));
+    vector<float> x, y;
+    for (const auto &tup : minimo.first)
+    {
+        x.push_back(mapValue(get<0>(tup), 0, n - 1, instance["x"][0], instance["x"][int(instance["n"]) - 1]));
+        y.push_back(mapValue(get<1>(tup), 0, m - 1, instance["y"][0], instance["y"][int(instance["n"]) - 1]));
     }
 
     j["x"] = x;
@@ -122,9 +159,7 @@ int main(int argc, char** argv) {
 
     // Escribe el objeto json a un archivo
     std::ofstream o("minimo.json");
-    o << j << std::endl;
-
-
+    o << j << endl;
 
     ofstream output("test_output.out");
 
