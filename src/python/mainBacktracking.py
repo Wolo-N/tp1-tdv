@@ -7,19 +7,24 @@ from backtracking import *
 from graphing import plot_graph
 
 def main():
-    files = ['aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json']
+    files = ['aspen_simulation', 'ethanol_water_vle', 'titanium', 'optimistic_instance', 'toy_instance']
     for filename in files:
         # Load instance from JSON
-        instance_name = filename
+        instance_name = filename + '.json'
         filename = "data/" + instance_name
         with open(filename) as f:
             instance = json.load(f)
 
-        m = 6
-        n = 6
+        m = 7
+        n = 7
         N = 5
 
-        solution = backtracking(m, n, N, instance)
+        start_time = time.time()
+
+        solution, min_error = backtracking(m, n, N, instance)
+
+        end_time = time.time()
+        excecution_time = end_time - start_time
 
         # Asegúrate de que el directorio exista
         solution_directory = 'data/solutions'
@@ -34,7 +39,7 @@ def main():
         except Exception as e:
             print(f"Error al guardar la solución: {e}")
 
-        plot_graph(instance_name, m, n, N)
+        plot_graph(instance_name, m, n, N, excecution_time, min_error)
 
 if __name__ == "__main__":
     main()

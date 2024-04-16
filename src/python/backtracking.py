@@ -22,16 +22,10 @@ def calcular_error(a: tuple, b: tuple, grid_x, grid_y, instance):
     return error
 
 def backtracking_recursivo(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y, min_error):
-    # Update the min_error dynamically based on current dictionary values
-    min_error = min(combinaciones.values(), default=1000000)  # Use default if dictionary is empty
-    
-    # Poda por error acumulado: Si el error total ya supera el mínimo error encontrado, no continúa.
 
-    
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
     if len(bp) == N and bp[-1][0] == m-1:
         combinaciones[tuple(bp)] = round(error_total, 3)
-        
         return bp, error_total, combinaciones
     
     if not bp:
@@ -52,12 +46,15 @@ def backtracking_recursivo(m, n, N, instance, i, bp, error_total, combinaciones,
             # Si ya hay breakpoints, calcula el error con el nuevo punto.
             if bp:
                 error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
-                print('error total + error:',error_total, '+', error)
-                print('error min:',min_error)
+                min_error = min(combinaciones.values(), default=1000000)  # Inicializo el diccionario.
+                # Poda por optimalidad
                 if (error_total + error) < min_error:
-                    print('corte')
-                    # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
-                    backtracking_recursivo(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y, min_error)
+                    #Poda por factibilidad
+                    if len(new_bp) == N and (next_i != n-1): 
+                        return
+                    else:
+                        # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
+                        backtracking_recursivo(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y, min_error)
 
     # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas.
     return bp, error_total, combinaciones
@@ -91,4 +88,4 @@ def backtracking(m, n, N, instance):
         'obj': minimum_error
     }
 
-    return solution
+    return solution, minimum_error
