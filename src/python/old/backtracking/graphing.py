@@ -12,9 +12,9 @@ def plot_pwl(solution, color='g'):
 def plot_data(data, color):
     plt.plot(data['x'], data['y'],'.', color=color, zorder=4)
 
-def plot_graph(instancia, m, n, N, excecution_time, min_error):
+def plot_graph(instancia, m, n, N, excecution_time, min_error, funcion):
         # Choose a directory to save the figures
-    figures_directory = '/Users/nicolasfranke/Desktop/DITELLA/TDV -  Diseño de Algoritmos/TPs/Figuras/backtracking'
+    figures_directory = '/Users/nicolasfranke/Desktop/DITELLA/TDV -  Diseño de Algoritmos/TPs/Figuras/programacion dinamica'
     if not os.path.exists(figures_directory):
         os.makedirs(figures_directory)
 
@@ -44,7 +44,7 @@ def plot_graph(instancia, m, n, N, excecution_time, min_error):
     plt.xticks(grid_x)
     plt.yticks(grid_y)
     plt.suptitle(instancia.replace(".json", "").upper(), fontweight="bold", fontsize=14)
-    plt.title(f"Backtracking \n Completado en {round(excecution_time, 3)}s con un error de {min_error}.")
+    plt.title(f"{funcion} \n Completado en {round(excecution_time, 3)}s con un error de {min_error}.")
     plt.tight_layout()
 
     #Graficamos datos y linea

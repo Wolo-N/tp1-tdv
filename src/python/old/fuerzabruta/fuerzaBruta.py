@@ -21,24 +21,17 @@ def calcular_error(a: tuple, b: tuple, grid_x, grid_y, instance):
     # Devuelve el error total acumulado para todos los puntos en el rango de interés.
     return error
 
-def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, memoria, grid_x, grid_y):
+def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y):
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
     if len(bp) == N and bp[-1][0] == m-1:
-        memoria[tuple(bp)] = round(error_total, 3)
-        return bp, error_total, memoria
-
+        combinaciones[tuple(bp)] = round(error_total, 3)
+        return bp, error_total, combinaciones
 
     if not bp:
         # Si es el primer breakpoint, llama recursivamente sin añadir error.
         for z in range(m):
             new_bp = [(0,z)]
-            programacion_dinamica_recursiva(m, n, N, instance, 0, new_bp, error_total, memoria, grid_x, grid_y)
-    
-    if str(tuple(bp)) in memoria:  # Verifica si la combinación actual ya está en la memoria
-        # Si la combinación actual ya ha sido calculada, devuelve el resultado almacenado
-        print('h')
-
-    
+            fuerza_bruta_recursiva(m, n, N, instance, 0, new_bp, error_total, combinaciones, grid_x, grid_y)
     # Itera sobre todas las posibles posiciones y para el próximo breakpoint.
     for j in range(m):
         # Verifica si aún se pueden agregar breakpoints.
@@ -53,26 +46,22 @@ def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, memor
             if bp:
                 error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
                 # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
-                programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error, memoria, grid_x, grid_y)
-                memoria[tuple(bp)] = round(error_total + error, 3)
-
+                fuerza_bruta_recursiva(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y)
 
     # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas.
-    return bp, error_total, memoria
+    return bp, error_total, combinaciones
 
-
-
-def programacion_dinamica(m, n, N, instance):
+def fuerza_bruta(m, n, N, instance):
     grid_x = np.linspace(min(instance["x"]), max(instance["x"]), num=m, endpoint=True)
     grid_y = np.linspace(min(instance["y"]), max(instance["y"]), num=n, endpoint=True)
     
-    memoria = {}
-    programacion_dinamica_recursiva(m, n, N, instance, 0, [], 0, memoria, grid_x, grid_y)
+    combinaciones = {}
+    fuerza_bruta_recursiva(m, n, N, instance, 0, [], 0, combinaciones, grid_x, grid_y)
 
     # REVISAR
-    top_combinaciones = sorted(memoria.items(), key=lambda item: item[1])[:5]
+    top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
     
-    print(f"Top 5 Combinaciones de {len(memoria)}:")
+    print(f"Top 5 Combinaciones de {len(combinaciones)}:")
     for idx, (comb, error) in enumerate(top_combinaciones, 1):
         print(f"{idx}: {comb} con error: {error}")
         # Extract the best combination
@@ -91,3 +80,4 @@ def programacion_dinamica(m, n, N, instance):
     }
 
     return solution, min_error
+

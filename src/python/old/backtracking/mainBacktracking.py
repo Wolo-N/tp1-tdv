@@ -3,14 +3,14 @@ import numpy as np
 import os
 import time
 
-from programaciondinamica import programacion_dinamica
+from backtracking import *
 from graphing import plot_graph
 
 def main():
-    files = ['titanium.json', 'ethanol_water_vle.json', 'aspen_simulation.json', 'optimistic_instance.json', 'toy_instance.json']
+    files = ['aspen_simulation', 'ethanol_water_vle', 'titanium', 'optimistic_instance', 'toy_instance']
     for filename in files:
         # Load instance from JSON
-        instance_name = filename
+        instance_name = filename + '.json'
         filename = "data/" + instance_name
         with open(filename) as f:
             instance = json.load(f)
@@ -18,16 +18,13 @@ def main():
         m = 6
         n = 6
         N = 5
-        
+
         start_time = time.time()
 
-        # Obtener la solución utilizando programacion_dinamica
-        solution, min_error = programacion_dinamica(m, n, N, instance)
-        print(solution)
+        solution, min_error = backtracking(m, n, N, instance)
 
         end_time = time.time()
         excecution_time = end_time - start_time
-        print(excecution_time)
 
         # Asegúrate de que el directorio exista
         solution_directory = 'data/solutions'
@@ -42,7 +39,7 @@ def main():
         except Exception as e:
             print(f"Error al guardar la solución: {e}")
 
-        plot_graph(instance_name, m, n, solution, excecution_time, min_error)
+        plot_graph(instance_name, m, n, N, excecution_time, min_error, 'Backtracking')
 
 if __name__ == "__main__":
     main()

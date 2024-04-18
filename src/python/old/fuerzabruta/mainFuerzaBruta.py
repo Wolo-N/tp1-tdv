@@ -39,7 +39,7 @@ def main():
         except Exception as e:
             print(f"Error al guardar la solución: {e}")
 
-        plot_graph(instance_name, m, n, N, excecution_time, min_error)
+        plot_graph(instance_name, m, n, N, excecution_time, min_error, 'Fuerza Bruta')
 
 if __name__ == "__main__":
     main()

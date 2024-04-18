@@ -17,7 +17,7 @@ def main():
 
         m = 6
         n = 6
-        N = 4
+        N = 5
 
         start_time = time.time()
 
@@ -39,7 +39,7 @@ def main():
         except Exception as e:
             print(f"Error al guardar la solución: {e}")
 
-        plot_graph(instance_name, m, n, N, excecution_time, min_error)
+        plot_graph(instance_name, m, n, N, excecution_time, min_error, 'Backtracking')
 
 if __name__ == "__main__":
     main()
