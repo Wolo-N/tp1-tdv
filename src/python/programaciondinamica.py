@@ -10,7 +10,6 @@ def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combi
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
     if len(bp) == N and bp[-1][0] == m-1:
         combinaciones[tuple(bp)] = round(error_total, 3)
-        #print(combinaciones)
         return bp, error_total, combinaciones
 
 
@@ -59,7 +58,7 @@ def programacion_dinamica(m, n, N, instance):
 
     # REVISAR
     top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
-    
+
     print(f"Top 5 Combinaciones de {len(combinaciones)}:")
     for idx, (comb, error) in enumerate(top_combinaciones, 1):
         print(f"{idx}: {comb} con error: {error}")
@@ -81,44 +80,45 @@ def programacion_dinamica(m, n, N, instance):
     return solution, min_error
 
 def main():
-    files = ['optimistic_instance.json']
-    for filename in files:
-        # Load instance from JSON
-        instance_name = filename
-        filename = "data/" + instance_name
-        with open(filename) as f:
-            instance = json.load(f)
+    for i in range(2, 20):
+        files = ['optimistic_instance']
+        for filename in files:
+            # Load instance from JSON
+            instance_name = filename + '.json'
+            filename = "data/" + instance_name
+            with open(filename) as f:
+                instance = json.load(f)
 
-        m = 6
-        n = 6
-        N = 5
-        
-        for i in range(1):
-            start_time = time.time()
+            m = i
+            n = i
+            N = i
 
-            # Obtener la solución utilizando programacion_dinamica
-            solution, min_error = programacion_dinamica(m, n, N, instance)
+            for i in range(1):
+                start_time = time.time()
 
-            end_time = time.time()
-            excecution_time = end_time - start_time
-            total_excecution_time =+ excecution_time
-        
-        average_excecution_time = total_excecution_time/1
+                # Obtener la solución utilizando programacion_dinamica
+                solution, min_error = programacion_dinamica(m, n, N, instance)
 
-        # Asegúrate de que el directorio exista
-        solution_directory = 'data/solutions'
-        if not os.path.exists(solution_directory):
-            os.makedirs(solution_directory)
+                end_time = time.time()
+                excecution_time = end_time - start_time
+                total_excecution_time =+ excecution_time
 
-        solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
-        try:
-            with open(solution_filename, 'w') as f:
-                json.dump(solution, f)
-            print(f'Solution exported to {solution_filename}')
-        except Exception as e:
-            print(f"Error al guardar la solución: {e}")
+            average_excecution_time = total_excecution_time/1
 
-        plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Programacion Dinamica')
+            # Asegúrate de que el directorio exista
+            solution_directory = 'data/solutions'
+            if not os.path.exists(solution_directory):
+                os.makedirs(solution_directory)
+
+            solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
+            try:
+                with open(solution_filename, 'w') as f:
+                    json.dump(solution, f)
+                print(f'Solution exported to {solution_filename}')
+            except Exception as e:
+                print(f"Error al guardar la solución: {e}")
+
+            plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Programacion Dinamica')
 
 if __name__ == "__main__":
     main()

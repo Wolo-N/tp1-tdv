@@ -1,0 +1,1 @@
+if len(bp) == N and bp[-1][0] == m-1:
