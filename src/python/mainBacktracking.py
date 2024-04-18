@@ -15,9 +15,9 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
 
-        m = 7
-        n = 7
-        N = 5
+        m = 6
+        n = 6
+        N = 2
 
         start_time = time.time()
 

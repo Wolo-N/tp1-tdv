@@ -40,30 +40,26 @@ def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combi
     for j in range(m):
         # Verifica si aún se pueden agregar breakpoints.
         for k in range(i+1,n):
-            # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
-            next_i = k if not bp else min(k, m)
-
             # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
-            new_bp = bp + [(next_i, j)]
-            
-            
+            new_bp = bp + [(k, j)]
             # Si ya hay breakpoints, calcula el error con el nuevo punto.
             if bp:
                 error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
-                if (str(next_i)+","+str(j)) in memoria:
-                    if memoria[str(next_i)+","+str(j)] > error_total + error:
-                        memoria[str(next_i)+","+str(j)] = error_total + error
-                        programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
-                    elif(memoria[str(next_i)+","+str(j)] == error_total + error):
-                        programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+                # Si la clave está en memoria significa que ya calculé su error.
+                if (str(k)+","+str(j)) in memoria:
+                    # Si el error almacenado es mayor al actual
+                    if memoria[str(k)+","+str(j)] > error_total + error:
+                        # Lo actualizo, no era el mínimo. 
+                        memoria[str(k)+","+str(j)] = error_total + error
+                        programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+                    # Si lo que está almacenado tiene el mismo error que el actual, sigue con la recurisón.
+                    elif(memoria[str(k)+","+str(j)] == error_total + error):
+                        programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
                 else:
-                    memoria[str(next_i)+","+str(j)] = error_total + error
-                    programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
-
-                # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
-                
-                
-
+                    # Si entra a esta instancia significa que no había nada en memoria, agrego el valor. 
+                    memoria[str(k)+","+str(j)] = error_total + error
+                    # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
+                    programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
 
     # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas.
     return bp, error_total, combinaciones

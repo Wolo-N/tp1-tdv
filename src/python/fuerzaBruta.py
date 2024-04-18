@@ -38,18 +38,15 @@ def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones,
     for j in range(m):
         # Verifica si aún se pueden agregar breakpoints.
         for k in range(i+1,n):
-            # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
-            next_i = k if not bp else min(k, m)
-
             # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
-            new_bp = bp + [(next_i, j)]
+            new_bp = bp + [(k, j)]
             
             #CASO RECURSIVO:
             # Si ya hay breakpoints, calcula el error con el nuevo punto.
             if bp:
                 error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
                 # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
-                fuerza_bruta_recursiva(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y)
+                fuerza_bruta_recursiva(m, n, N, instance, k, new_bp, error_total + error, combinaciones, grid_x, grid_y)
 
     # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas.
     return bp, error_total, combinaciones

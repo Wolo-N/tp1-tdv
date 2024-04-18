@@ -1,128 +1,165 @@
+#include <string>
 #include <iostream>
+#include <fstream>
+#include "../include/json.hpp" // Incluye la biblioteca json.hpp, suponiendo que se encuentra en el directorio superior.
+#include <tuple>
+#include <cstdlib>
 #include <vector>
 #include <map>
-#include <cmath>
+#include <algorithm>
+// #include <cmath>
 
-struct Instance
+using namespace std;
+
+// Para librería de JSON.
+using namespace nlohmann;
+
+// Función para mapear un valor de un rango a otro.
+double mapValue(double value, double fromLow, double fromHigh, double toLow, double toHigh)
 {
-    std::vector<double> x;
-    std::vector<double> y;
-};
+    return double(value - fromLow) / double(fromHigh - fromLow) * double(toHigh - toLow) + toLow;
+}
 
-double calcular_error(const std::pair<int, int> &a, const std::pair<int, int> &b, const std::vector<double> &grid_x, const std::vector<double> &grid_y, const Instance &instance)
+// Función para calcular el error entre dos puntos.
+double calcular_error(tuple<int, int> a, tuple<int, int> b, json instance, int n, int m)
 {
-    double error = 0;
-    double ax = grid_x[a.first];
-    double ay = grid_y[a.second];
-    double bx = grid_x[b.first];
-    double by = grid_y[b.second];
+    double AX = get<0>(a);
+    double BX = get<0>(b);
+    double AY = get<1>(a);
+    double BY = get<1>(b);
 
-    for (size_t i = 0; i < instance.x.size(); ++i)
+    // Busca el valor máximo y mínimo en los datos de 'y' de la instancia.
+    double maximo = instance["y"][0];
+    double minimo = instance["y"][0];
+    for (int i = 1; i < instance["n"]; i++)
     {
-        if (ax <= instance.x[i] && instance.x[i] <= bx)
+        if (instance["y"][i] > maximo)
         {
-            double predicted_y = ((by - ay) / (bx - ax)) * (instance.x[i] - ax) + ay;
-            error += std::abs(instance.y[i] - predicted_y);
+            maximo = instance["y"][i];
+        }
+        if (instance["y"][i] < minimo)
+        {
+            minimo = instance["y"][i];
         }
     }
 
+    double error = 0;
+    for (int i = 0; i < instance["n"]; i++)
+    {
+        // Mapea los valores 'x' y 'y' de la instancia al rango de la grilla.
+        double xi = mapValue(instance["x"][i], instance["x"][0], instance["x"][int(instance["n"]) - 1], 0, n - 1);
+        double yi = mapValue(double(instance["y"][i]), minimo, maximo, 0, m - 1);
+        if (AX <= xi && xi <= BX)
+        {
+            // Calcula el valor predicho de 'y' basado en los puntos 'a' y 'b'.
+            double predicted_y = ((BY - AY) / (BX - AX)) * (xi - AX) + AY;
+            error += abs(yi - predicted_y); // Acumula el error absoluto.
+        }
+    }
     return error;
 }
 
-void fuerza_bruta_recursiva(int m, int n, int N, const Instance &instance, int i, std::vector<std::pair<int, int>> &bp, double error_total, std::map<std::vector<std::pair<int, int>>, double> &combinaciones, const std::vector<double> &grid_x, const std::vector<double> &grid_y)
+// Función recursiva para encontrar todas las combinaciones posibles de breakpoints.
+map<vector<tuple<int, int>>, float> fuerza_bruta_recursiva(int n, int m, int N, json instance, int i, vector<tuple<int, int>> bp, float error_total, map<vector<tuple<int, int>>, float> &combinaciones)
 {
-    if (bp.size() == static_cast<size_t>(N) && bp.back().first == m - 1)
+    // Verifica si se ha alcanzado la cantidad deseada de breakpoints y si el último está en la última columna.
+    if (bp.size() == N && get<0>(bp[bp.size() - 1]) == m - 1)
     {
+        // Almacena la combinación de breakpoints junto a su error total.
         combinaciones[bp] = error_total;
-        return;
+        // Imprime la combinación y su error total.
+        for (const auto &tuple_elem : bp)
+        {
+            cout << " (" << get<0>(tuple_elem) << "," << get<1>(tuple_elem) << ")";
+        }
+        cout << error_total << endl;
+        return combinaciones;
     }
 
-    if (bp.empty())
+    // Si no hay breakpoints en la lista, genera nuevas combinaciones desde la primera columna.
+    if (bp.size() == 0)
     {
-        for (int z = 0; z < m; ++z)
+        cout << "recursion" << endl;
+        for (int z = 0; z < m; z++)
         {
-            std::vector<std::pair<int, int>> new_bp = {{0, z}};
-            fuerza_bruta_recursiva(m, n, N, instance, 0, new_bp, error_total, combinaciones, grid_x, grid_y);
+            vector<tuple<int, int>> new_bp = {make_tuple(0, z)};
+            fuerza_bruta_recursiva(m, n, N, instance, 0, new_bp, error_total, combinaciones);
         }
     }
-
-    for (int j = 0; j < m; ++j)
+    else
     {
-        for (int k = i + 1; k < n; ++k)
+        // Itera sobre las columnas y las filas para encontrar nuevas combinaciones.
+        for (int j = 0; j < m; j++)
         {
-            int next_i = k;
-            if (!bp.empty())
+            for (int k = i + 1; k < n; k++)
             {
-                next_i = std::min(k, m);
-            }
-
-            std::vector<std::pair<int, int>> new_bp = bp;
-            new_bp.push_back({next_i, j});
-
-            if (!bp.empty())
-            {
-                double error = calcular_error(bp.back(), {k, j}, grid_x, grid_y, instance);
-                fuerza_bruta_recursiva(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y);
+                vector<tuple<int, int>> new_bp = bp;
+                // Agrega un nuevo breakpoint.
+                new_bp.push_back(make_tuple(k, j));
+                float error = calcular_error(bp[bp.size() - 1], make_tuple(k, j), instance, n, m);
+                // Realiza una llamada recursiva para explorar nuevas combinaciones.
+                fuerza_bruta_recursiva(m, n, N, instance, k, new_bp, error_total + error, combinaciones);
             }
         }
     }
+    return combinaciones;
 }
 
-struct Solution
+pair<vector<tuple<int, int>>, float> fuerza_bruta(int n, int m, int N, json instance)
 {
-    int n;
-    std::vector<double> x;
-    std::vector<double> y;
-    double obj;
-};
+    map<vector<tuple<int, int>>, float> combinaciones = {};
+    // Realiza la búsqueda recursiva de todas las combinaciones posibles de breakpoints.
+    fuerza_bruta_recursiva(n, m, N, instance, 0, {}, 0.0, combinaciones);
 
-Solution fuerza_bruta(int m, int n, int N, const Instance &instance)
-{
-    std::vector<double> grid_x(m);
-    std::vector<double> grid_y(n);
-    for (int i = 0; i < m; ++i)
+    // Encuentra la combinación con el error total mínimo.
+    auto min_it = combinaciones.begin();
+    for (auto it = combinaciones.begin(); it != combinaciones.end(); ++it)
     {
-        grid_x[i] = (instance.x.back() - instance.x.front()) / (m - 1) * i + instance.x.front();
-    }
-    for (int i = 0; i < n; ++i)
-    {
-        grid_y[i] = (instance.y.back() - instance.y.front()) / (n - 1) * i + instance.y.front();
-    }
-
-    std::map<std::vector<std::pair<int, int>>, double> combinaciones;
-    fuerza_bruta_recursiva(m, n, N, instance, 0, {}, 0, combinaciones, grid_x, grid_y);
-
-    std::vector<std::pair<std::vector<std::pair<int, int>>, double>> top_combinaciones(combinaciones.begin(), combinaciones.end());
-    std::partial_sort(top_combinaciones.begin(), top_combinaciones.begin() + 5, top_combinaciones.end(),
-                      [](const auto &a, const auto &b)
-                      { return a.second < b.second; });
-
-    std::cout << "Top 5 Combinaciones de " << combinaciones.size() << ":\n";
-    for (size_t idx = 0; idx < 5; ++idx)
-    {
-        const auto &[comb, error] = top_combinaciones[idx];
-        std::cout << idx + 1 << ": ";
-        for (const auto &point : comb)
+        if (it->second < min_it->second)
         {
-            std::cout << "(" << grid_x[point.first] << "," << grid_y[point.second] << ") ";
+            min_it = it;
         }
-        std::cout << "con error: " << error << "\n";
     }
 
-    const auto &[best_combination, min_error] = top_combinaciones[0];
-    std::vector<double> best_x;
-    std::vector<double> best_y;
-    for (const auto &point : best_combination)
+    // Encuentra las mejores 5 combinaciones con los errores mínimos.
+    vector<vector<tuple<int, int>>> top_combinaciones;
+    vector<float> top_valores;
+    for (const auto &kvp : combinaciones)
     {
-        best_x.push_back(grid_x[point.first]);
-        best_y.push_back(grid_y[point.second]);
+        // Inserta la combinación actual en la lista ordenada de las mejores combinaciones.
+        bool inserted = false;
+        for (size_t i = 0; i < top_valores.size(); ++i)
+        {
+            if (kvp.second < top_valores[i])
+            {
+                top_combinaciones.insert(top_combinaciones.begin() + i, kvp.first);
+                top_valores.insert(top_valores.begin() + i, kvp.second);
+                inserted = true;
+                break;
+            }
+        }
+        if (!inserted && top_valores.size() < 5)
+        {
+            top_combinaciones.push_back(kvp.first);
+            top_valores.push_back(kvp.second);
+        }
+        if (top_combinaciones.size() > 5)
+        {
+            top_combinaciones.pop_back();
+            top_valores.pop_back();
+        }
     }
 
-    Solution solution;
-    solution.n = best_combination.size();
-    solution.x = best_x;
-    solution.y = best_y;
-    solution.obj = min_error;
-
-    return solution;
+    // Imprime las mejores 5 combinaciones con los errores mínimos.
+    cout << "Top 5 combinaciones con los valores mínimos:\n";
+    for (size_t i = 0; i < top_combinaciones.size(); ++i)
+    {
+        cout << "Combinación " << i + 1 << ":\n";
+        for (const auto &tuple_elem : top_combinaciones[i])
+        {
+            cout << "(" << get<0>(tuple_elem) << "," << get<1>(tuple_elem) << ") ";
+        }
+        cout << "- Valor: " << top_valores[i] << "\n";
+    }
+    return *min_it; // Devuelve el par clave-valor con el valor mínimo.
 }
