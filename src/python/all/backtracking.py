@@ -1,25 +1,10 @@
 import json
 import numpy as np
+import os
+import time
 
-def calcular_error(a: tuple, b: tuple, grid_x, grid_y, instance):
-    # Inicializa el error acumulado a 0.
-    error = 0
-    
-    # Extrae las coordenadas x e y para el punto a y b usando los índices de a en las grillas grid_x y grid_y.
-    ax, ay = grid_x[a[0]], grid_y[a[1]]
-    bx, by = grid_x[b[0]], grid_y[b[1]]
-    
-    # Itera sobre cada punto x en el conjunto de datos.
-    for i, x in enumerate(instance["x"]):
-        # Si el punto actual x está entre ax y bx...
-        if ax <= x <= bx:
-            # Calculamos el valor de y predicho por la recta que pasa por a y b.
-            predicted_y = ((by - ay) / (bx - ax)) * (x - ax) + ay
-            # Acumulamos el error absoluto entre el y predicho y el y real para este punto.
-            error += abs(instance["y"][i] - predicted_y)
-    
-    # Devuelve el error total acumulado para todos los puntos en el rango de interés.
-    return error
+from graphing import plot_graph
+from shared import calcular_error
 
 def backtracking_recursivo(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y, min_error):
 
@@ -92,3 +77,40 @@ def backtracking(m, n, N, instance):
 
     return solution, minimum_error
 
+def main():
+    files = ['aspen_simulation', 'ethanol_water_vle', 'titanium', 'optimistic_instance', 'toy_instance']
+    for filename in files:
+        # Load instance from JSON
+        instance_name = filename + '.json'
+        filename = "data/" + instance_name
+        with open(filename) as f:
+            instance = json.load(f)
+
+        m = 6
+        n = 6
+        N = 5
+
+        start_time = time.time()
+
+        solution, min_error = backtracking(m, n, N, instance)
+
+        end_time = time.time()
+        excecution_time = end_time - start_time
+
+        # Asegúrate de que el directorio exista
+        solution_directory = 'data/solutions'
+        if not os.path.exists(solution_directory):
+            os.makedirs(solution_directory)
+
+        solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
+        try:
+            with open(solution_filename, 'w') as f:
+                json.dump(solution, f)
+            print(f'Solution exported to {solution_filename}')
+        except Exception as e:
+            print(f"Error al guardar la solución: {e}")
+
+        plot_graph(instance_name, m, n, N, excecution_time, min_error, 'Backtracking')
+
+if __name__ == "__main__":
+    main()
