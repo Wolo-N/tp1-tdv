@@ -22,16 +22,15 @@ def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones,
         # Verifica si aún se pueden agregar breakpoints.
         for k in range(i+1,n):
             # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
-            next_i = k if not bp else min(k, m)
 
             # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
-            new_bp = bp + [(next_i, j)]
+            new_bp = bp + [(k, j)]
 
             # Si ya hay breakpoints, calcula el error con el nuevo punto.
             if bp:
                 error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
                 # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
-                fuerza_bruta_recursiva(m, n, N, instance, next_i, new_bp, error_total + error, combinaciones, grid_x, grid_y)
+                fuerza_bruta_recursiva(m, n, N, instance, k, new_bp, error_total + error, combinaciones, grid_x, grid_y)
 
     # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas.
     return bp, error_total, combinaciones
@@ -77,14 +76,19 @@ def main():
 
         m = 6
         n = 6
-        N = 5
+        N = 4
         
-        start_time = time.time()
+        for i in range(1):
+            start_time = time.time()
 
-        solution, min_error = fuerza_bruta(m, n, N, instance)
+            # Obtener la solución utilizando programacion_dinamica
+            solution, min_error = fuerza_bruta(m, n, N, instance)
 
-        end_time = time.time()
-        excecution_time = end_time - start_time
+            end_time = time.time()
+            excecution_time = end_time - start_time
+            total_excecution_time =+ excecution_time
+        
+        average_excecution_time = total_excecution_time/1
 
         # Asegúrate de que el directorio exista
         solution_directory = 'data/solutions'
@@ -99,7 +103,7 @@ def main():
         except Exception as e:
             print(f"Error al guardar la solución: {e}")
 
-        plot_graph(instance_name, m, n, N, excecution_time, min_error, 'Fuerza Bruta')
+        plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Fuerza Bruta')
 
 if __name__ == "__main__":
     main()

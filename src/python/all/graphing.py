@@ -44,7 +44,7 @@ def plot_graph(instancia, m, n, N, excecution_time, min_error, funcion):
     plt.xticks(grid_x)
     plt.yticks(grid_y)
     plt.suptitle(instancia.replace(".json", "").upper(), fontweight="bold", fontsize=14)
-    plt.title(f"{funcion} \n Completado en {round(excecution_time, 4)}s con un error de {min_error}.")
+    plt.title(f"{funcion} \n Completado en {round(excecution_time, 4)}s con un error de {min_error}. \n m = {m}, n = {n} y N = {N}")
     plt.tight_layout()
 
     #Graficamos datos y linea

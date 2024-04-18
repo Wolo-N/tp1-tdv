@@ -25,23 +25,22 @@ def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combi
         # Verifica si aún se pueden agregar breakpoints.
         for k in range(i+1,n):
             # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
-            next_i = k if not bp else min(k, m)
 
             # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
-            new_bp = bp + [(next_i, j)]
+            new_bp = bp + [(k, j)]
 
             # Si ya hay breakpoints, calcula el error con el nuevo punto.
             if bp:
                 error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
-                if (str(next_i)+","+str(j)) in memoria:
-                    if memoria[str(next_i)+","+str(j)] > error_total + error:
-                        memoria[str(next_i)+","+str(j)] = error_total + error
-                        programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
-                    elif(memoria[str(next_i)+","+str(j)] == error_total + error):
-                        programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+                if (str(k)+","+str(j)) in memoria:
+                    if memoria[str(k)+","+str(j)] > error_total + error:
+                        memoria[str(k)+","+str(j)] = error_total + error
+                        programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+                    elif(memoria[str(k)+","+str(j)] == error_total + error):
+                        programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
                 else:
-                    memoria[str(next_i)+","+str(j)] = error_total + error
-                    programacion_dinamica_recursiva(m, n, N, instance, next_i, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+                    memoria[str(k)+","+str(j)] = error_total + error
+                    programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
 
                 # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
 
@@ -61,7 +60,7 @@ def programacion_dinamica(m, n, N, instance):
     # REVISAR
     top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
     
-    print(f"Top 5 Combinaciones de {len(memoria)}:")
+    print(f"Top 5 Combinaciones de {len(combinaciones)}:")
     for idx, (comb, error) in enumerate(top_combinaciones, 1):
         print(f"{idx}: {comb} con error: {error}")
         # Extract the best combination
@@ -82,7 +81,7 @@ def programacion_dinamica(m, n, N, instance):
     return solution, min_error
 
 def main():
-    files = ['aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json']
+    files = ['optimistic_instance.json']
     for filename in files:
         # Load instance from JSON
         instance_name = filename
@@ -94,7 +93,7 @@ def main():
         n = 6
         N = 5
         
-        for i in range(11):
+        for i in range(1):
             start_time = time.time()
 
             # Obtener la solución utilizando programacion_dinamica
@@ -104,7 +103,7 @@ def main():
             excecution_time = end_time - start_time
             total_excecution_time =+ excecution_time
         
-        average_excecution_time = total_excecution_time/5
+        average_excecution_time = total_excecution_time/1
 
         # Asegúrate de que el directorio exista
         solution_directory = 'data/solutions'
@@ -119,7 +118,7 @@ def main():
         except Exception as e:
             print(f"Error al guardar la solución: {e}")
 
-        plot_graph(instance_name, m, n, solution, average_excecution_time, min_error, 'Programacion Dinamica')
+        plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Programacion Dinamica')
 
 if __name__ == "__main__":
     main()
