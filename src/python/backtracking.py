@@ -68,6 +68,7 @@ def backtracking(m, n, N, instance):
 
 def main():
     files = ['aspen_simulation', 'ethanol_water_vle', 'titanium', 'optimistic_instance', 'toy_instance']
+    reps = 1
     for filename in files:
         # Load instance from JSON
         instance_name = filename + '.json'
@@ -75,11 +76,11 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
 
-        m = 8
-        n = 8
-        N = 4
+        m = 20
+        n = 20
+        N = 7
 
-        for i in range(1):
+        for i in range(reps):
             start_time = time.time()
 
             # Obtener la solución utilizando programacion_dinamica
@@ -88,8 +89,8 @@ def main():
             end_time = time.time()
             excecution_time = end_time - start_time
             total_excecution_time =+ excecution_time
-        
-        average_excecution_time = total_excecution_time/1
+
+        average_excecution_time = total_excecution_time/reps
 
 
         # Asegúrate de que el directorio exista

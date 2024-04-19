@@ -67,7 +67,9 @@ def fuerza_bruta(m, n, N, instance):
     return solution, min_error
 
 def main():
-    files = ['aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json']
+    files = ['optimistic_instance.json'] #'aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json'
+    
+    reps = 1
     for filename in files:
         # Load instance from JSON
         instance_name = filename
@@ -75,36 +77,38 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
 
-        m = 6
-        n = 6
-        N = 5
-        
-        for i in range(10):
-            start_time = time.time()
+        for w in range(2,10):
 
-            # Obtener la solución utilizando programacion_dinamica
-            solution, min_error = fuerza_bruta(m, n, N, instance)
+            m = 10
+            n = 10
+            N = w
+            
+            for i in range(reps):
+                start_time = time.time()
 
-            end_time = time.time()
-            excecution_time = end_time - start_time
-            total_excecution_time =+ excecution_time
-        
-        average_excecution_time = total_excecution_time/10
+                # Obtener la solución utilizando programacion_dinamica
+                solution, min_error = fuerza_bruta(m, n, N, instance)
 
-        # Asegúrate de que el directorio exista
-        solution_directory = 'data/solutions'
-        if not os.path.exists(solution_directory):
-            os.makedirs(solution_directory)
+                end_time = time.time()
+                excecution_time = end_time - start_time
+                total_excecution_time =+ excecution_time
+            
+            average_excecution_time = total_excecution_time/reps
 
-        solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
-        try:
-            with open(solution_filename, 'w') as f:
-                json.dump(solution, f)
-            print(f'Solution exported to {solution_filename}')
-        except Exception as e:
-            print(f"Error al guardar la solución: {e}")
+            # Asegúrate de que el directorio exista
+            solution_directory = 'data/solutions'
+            if not os.path.exists(solution_directory):
+                os.makedirs(solution_directory)
 
-        plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Fuerza Bruta')
+            solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
+            try:
+                with open(solution_filename, 'w') as f:
+                    json.dump(solution, f)
+                print(f'Solution exported to {solution_filename}')
+            except Exception as e:
+                print(f"Error al guardar la solución: {e}")
+            print(w)
+            plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Fuerza Bruta', w)
 
 if __name__ == "__main__":
     main()

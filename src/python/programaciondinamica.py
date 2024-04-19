@@ -79,7 +79,11 @@ def programacion_dinamica(m, n, N, instance):
     return solution, min_error
 
 def main():
-    files = ['aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json']
+    files = [ 'optimistic_instance.json']#'aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json','toy_instance.json'
+    
+    reps = 1
+
+    
     for filename in files:
         # Load instance from JSON
         instance_name = filename
@@ -87,36 +91,38 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
 
-        m = 10
-        n = 10
-        N = 6
-        
-        for i in range(1):
-            start_time = time.time()
+        for w in range(15,21):
+            m = 20
+            n = 20
+            N = w
+            
+            for i in range(reps):
+                start_time = time.time()
 
-            # Obtener la solución utilizando programacion_dinamica
-            solution, min_error = programacion_dinamica(m, n, N, instance)
+                # Obtener la solución utilizando programacion_dinamica
+                solution, min_error = programacion_dinamica(m, n, N, instance)
 
-            end_time = time.time()
-            excecution_time = end_time - start_time
-            total_excecution_time =+ excecution_time
-        
-        average_excecution_time = total_excecution_time/1
+                end_time = time.time()
+                excecution_time = end_time - start_time
+                total_excecution_time =+ excecution_time
+            
+            average_excecution_time = total_excecution_time/reps
 
-        # Asegúrate de que el directorio exista
-        solution_directory = 'data/solutions'
-        if not os.path.exists(solution_directory):
-            os.makedirs(solution_directory)
+            # Asegúrate de que el directorio exista
+            solution_directory = 'data/solutions'
+            
+            if not os.path.exists(solution_directory):
+                os.makedirs(solution_directory)
 
-        solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
-        try:
-            with open(solution_filename, 'w') as f:
-                json.dump(solution, f)
-            print(f'Solution exported to {solution_filename}')
-        except Exception as e:
-            print(f"Error al guardar la solución: {e}")
-
-        plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Programacion Dinamica')
+            solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
+            try:
+                with open(solution_filename, 'w') as f:
+                    json.dump(solution, f)
+                print(f'Solution exported to {solution_filename}')
+            except Exception as e:
+                print(f"Error al guardar la solución: {e}")
+            print(w)
+            plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Programacion Dinamica', w)
 
 if __name__ == "__main__":
     main()

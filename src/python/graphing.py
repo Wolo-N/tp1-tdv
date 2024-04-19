@@ -12,14 +12,14 @@ def plot_pwl(solution, color='g'):
 def plot_data(data, color):
     plt.plot(data['x'], data['y'],'.', color=color, zorder=4)
 
-def plot_graph(instancia, m, n, N, excecution_time, min_error, funcion):
+def plot_graph(instancia, m, n, N, excecution_time, min_error, funcion,i):
         # Choose a directory to save the figures
     figures_directory = f'/Users/nicolasfranke/Desktop/DITELLA/TDV -  Diseño de Algoritmos/TPs/Figuras/{funcion}'
     if not os.path.exists(figures_directory):
         os.makedirs(figures_directory)
 
     # Define the filename for the plot
-    filename = f"{instancia.replace('.json', '').upper()}_plot.png"
+    filename = f"{instancia.replace('.json', '').upper()}_plot{i}.png"
 
     # Full path for the file
     file_path = os.path.join(figures_directory, filename)
@@ -52,4 +52,4 @@ def plot_graph(instancia, m, n, N, excecution_time, min_error, funcion):
     plot_pwl(solution,'navy')
 
     plt.savefig(file_path, dpi=100, bbox_inches='tight')
-    plt.show()
+    # plt.show()
