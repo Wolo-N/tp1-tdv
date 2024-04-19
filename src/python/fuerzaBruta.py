@@ -8,7 +8,7 @@ from shared import calcular_error
 
 def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y):
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
-    if len(bp) == N and bp[-1][0] == m-1:
+    if len(bp) == N and bp[-1][0] == m-1 and bp[0][0] == 0:
         combinaciones[tuple(bp)] = round(error_total, 3)
         return bp, error_total, combinaciones
 
@@ -17,20 +17,21 @@ def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones,
         for z in range(m):
             new_bp = [(0,z)]
             fuerza_bruta_recursiva(m, n, N, instance, 0, new_bp, error_total, combinaciones, grid_x, grid_y)
-    # Itera sobre todas las posibles posiciones y para el próximo breakpoint.
-    for j in range(m):
-        # Verifica si aún se pueden agregar breakpoints.
-        for k in range(i+1,n):
-            # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
+    
+    elif len(bp) < N: 
+        for j in range(m):
+            # Verifica si aún se pueden agregar breakpoints.
+            for k in range(i+1,n):
+                # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
 
-            # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
-            new_bp = bp + [(k, j)]
+                # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
+                new_bp = bp + [(k, j)]
 
-            # Si ya hay breakpoints, calcula el error con el nuevo punto.
-            if bp:
-                error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
-                # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
-                fuerza_bruta_recursiva(m, n, N, instance, k, new_bp, error_total + error, combinaciones, grid_x, grid_y)
+                # Si ya hay breakpoints, calcula el error con el nuevo punto.
+                if bp:
+                    error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
+                    # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
+                    fuerza_bruta_recursiva(m, n, N, instance, k, new_bp, error_total + error, combinaciones, grid_x, grid_y)
 
     # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas.
     return bp, error_total, combinaciones
@@ -44,7 +45,7 @@ def fuerza_bruta(m, n, N, instance):
 
     # REVISAR
     top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
-
+    
     print(f"Top 5 Combinaciones de {len(combinaciones)}:")
     for idx, (comb, error) in enumerate(top_combinaciones, 1):
         print(f"{idx}: {comb} con error: {error}")
@@ -76,9 +77,9 @@ def main():
 
         m = 6
         n = 6
-        N = 4
-
-        for i in range(1):
+        N = 5
+        
+        for i in range(10):
             start_time = time.time()
 
             # Obtener la solución utilizando programacion_dinamica
@@ -88,7 +89,7 @@ def main():
             excecution_time = end_time - start_time
             total_excecution_time =+ excecution_time
         
-        average_excecution_time = total_excecution_time/1
+        average_excecution_time = total_excecution_time/10
 
         # Asegúrate de que el directorio exista
         solution_directory = 'data/solutions'

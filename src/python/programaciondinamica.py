@@ -8,40 +8,39 @@ from shared import calcular_error
 
 def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combinaciones, memoria, grid_x, grid_y):
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
-    if len(bp) == N and bp[-1][0] == m-1:
+    if len(bp) == N and bp[-1][0] == m-1 and bp[0][0] == 0:
         combinaciones[tuple(bp)] = round(error_total, 3)
         return bp, error_total, combinaciones
-
 
     if not bp:
         # Si es el primer breakpoint, llama recursivamente sin añadir error.
         for z in range(m):
             new_bp = [(0,z)]
             programacion_dinamica_recursiva(m, n, N, instance, 0, new_bp, error_total,combinaciones, memoria, grid_x, grid_y)
-
+    elif len(bp)< N: #Magia de luli.
     # Itera sobre todas las posibles posiciones y para el próximo breakpoint.
-    for j in range(m):
-        # Verifica si aún se pueden agregar breakpoints.
-        for k in range(i+1,n):
-            # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
+        for j in range(m):
+            # Verifica si aún se pueden agregar breakpoints.
+            for k in range(i+1,n):
+                # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
 
-            # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
-            new_bp = bp + [(k, j)]
+                # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
+                new_bp = bp + [(k, j)]
 
-            # Si ya hay breakpoints, calcula el error con el nuevo punto.
-            if bp:
-                error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
-                if (str(k)+","+str(j)) in memoria:
-                    if memoria[str(k)+","+str(j)] > error_total + error:
+                # Si ya hay breakpoints, calcula el error con el nuevo punto.
+                if bp:
+                    error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
+                    if (str(k)+","+str(j)) in memoria:
+                        if memoria[str(k)+","+str(j)] > error_total + error:
+                            memoria[str(k)+","+str(j)] = error_total + error
+                            programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+                        elif(memoria[str(k)+","+str(j)] == error_total + error):
+                            programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+                    else:
                         memoria[str(k)+","+str(j)] = error_total + error
                         programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
-                    elif(memoria[str(k)+","+str(j)] == error_total + error):
-                        programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
-                else:
-                    memoria[str(k)+","+str(j)] = error_total + error
-                    programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
 
-                # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
+                    # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
 
     # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas.
     return bp, error_total, combinaciones
@@ -58,7 +57,7 @@ def programacion_dinamica(m, n, N, instance):
 
     # REVISAR
     top_combinaciones = sorted(combinaciones.items(), key=lambda item: item[1])[:5]
-
+    
     print(f"Top 5 Combinaciones de {len(combinaciones)}:")
     for idx, (comb, error) in enumerate(top_combinaciones, 1):
         print(f"{idx}: {comb} con error: {error}")
@@ -80,45 +79,44 @@ def programacion_dinamica(m, n, N, instance):
     return solution, min_error
 
 def main():
-    for i in range(2, 20):
-        files = ['optimistic_instance']
-        for filename in files:
-            # Load instance from JSON
-            instance_name = filename + '.json'
-            filename = "data/" + instance_name
-            with open(filename) as f:
-                instance = json.load(f)
+    files = ['aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json']
+    for filename in files:
+        # Load instance from JSON
+        instance_name = filename
+        filename = "data/" + instance_name
+        with open(filename) as f:
+            instance = json.load(f)
 
-            m = i
-            n = i
-            N = i
+        m = 10
+        n = 10
+        N = 6
+        
+        for i in range(1):
+            start_time = time.time()
 
-            for i in range(1):
-                start_time = time.time()
+            # Obtener la solución utilizando programacion_dinamica
+            solution, min_error = programacion_dinamica(m, n, N, instance)
 
-                # Obtener la solución utilizando programacion_dinamica
-                solution, min_error = programacion_dinamica(m, n, N, instance)
+            end_time = time.time()
+            excecution_time = end_time - start_time
+            total_excecution_time =+ excecution_time
+        
+        average_excecution_time = total_excecution_time/1
 
-                end_time = time.time()
-                excecution_time = end_time - start_time
-                total_excecution_time =+ excecution_time
+        # Asegúrate de que el directorio exista
+        solution_directory = 'data/solutions'
+        if not os.path.exists(solution_directory):
+            os.makedirs(solution_directory)
 
-            average_excecution_time = total_excecution_time/1
+        solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
+        try:
+            with open(solution_filename, 'w') as f:
+                json.dump(solution, f)
+            print(f'Solution exported to {solution_filename}')
+        except Exception as e:
+            print(f"Error al guardar la solución: {e}")
 
-            # Asegúrate de que el directorio exista
-            solution_directory = 'data/solutions'
-            if not os.path.exists(solution_directory):
-                os.makedirs(solution_directory)
-
-            solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
-            try:
-                with open(solution_filename, 'w') as f:
-                    json.dump(solution, f)
-                print(f'Solution exported to {solution_filename}')
-            except Exception as e:
-                print(f"Error al guardar la solución: {e}")
-
-            plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Programacion Dinamica')
+        plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Programacion Dinamica')
 
 if __name__ == "__main__":
     main()

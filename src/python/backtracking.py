@@ -16,7 +16,7 @@ def backtracking_recursivo(m, n, N, instance, i, bp, error_total, combinaciones,
             new_bp = [(0, z)]
             backtracking_recursivo(m, n, N, instance, 0, new_bp, error_total, combinaciones, grid_x, grid_y, min_error)
 
-    else:
+    elif len(bp) < N:
         # Itera sobre todas las posibles posiciones y para el próximo breakpoint.
         for j in range(m):
             for k in range(i+1, n):
@@ -75,9 +75,9 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
 
-        m = 10
-        n = 10
-        N = 2
+        m = 8
+        n = 8
+        N = 4
 
         for i in range(1):
             start_time = time.time()
