@@ -17,7 +17,7 @@ def main():
 
         m = 6
         n = 6
-        N = 2
+        N = 5
 
         start_time = time.time()
 
