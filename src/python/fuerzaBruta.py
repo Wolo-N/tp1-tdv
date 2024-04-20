@@ -3,8 +3,7 @@ import numpy as np
 import os
 import time
 
-from graphing import plot_graph
-from shared import calcular_error
+from shared import calcular_error, plot_graph
 
 def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y):
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
@@ -77,7 +76,7 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
 
-        for w in range(2,10):
+        for w in range(6,10):
 
             m = 10
             n = 10

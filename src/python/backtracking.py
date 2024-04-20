@@ -3,8 +3,7 @@ import numpy as np
 import os
 import time
 
-from graphing import plot_graph
-from shared import calcular_error
+from shared import calcular_error, plot_graph
 
 def backtracking_recursivo(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y, min_error):
     if len(bp) == N and bp[-1][0] == m-1 and bp[0][0] == 0:
@@ -67,7 +66,7 @@ def backtracking(m, n, N, instance):
     return solution, min_error
 
 def main():
-    files = ['aspen_simulation', 'ethanol_water_vle', 'titanium', 'optimistic_instance', 'toy_instance']
+    files = ['optimistic_instance']#'aspen_simulation', 'ethanol_water_vle', 'titanium', 'optimistic_instance', 'toy_instance'
     reps = 1
     for filename in files:
         # Load instance from JSON
@@ -75,38 +74,40 @@ def main():
         filename = "data/" + instance_name
         with open(filename) as f:
             instance = json.load(f)
+        
+        for w in range(1):
 
-        m = 20
-        n = 20
-        N = 7
+            m = 10
+            n = 10
+            N = 10
 
-        for i in range(reps):
-            start_time = time.time()
+            for i in range(reps):
+                start_time = time.time()
 
-            # Obtener la solución utilizando programacion_dinamica
-            solution, min_error = backtracking(m, n, N, instance)
+                # Obtener la solución utilizando programacion_dinamica
+                solution, min_error = backtracking(m, n, N, instance)
 
-            end_time = time.time()
-            excecution_time = end_time - start_time
-            total_excecution_time =+ excecution_time
+                end_time = time.time()
+                excecution_time = end_time - start_time
+                total_excecution_time =+ excecution_time
 
-        average_excecution_time = total_excecution_time/reps
+            average_excecution_time = total_excecution_time/reps
 
 
-        # Asegúrate de que el directorio exista
-        solution_directory = 'data/solutions'
-        if not os.path.exists(solution_directory):
-            os.makedirs(solution_directory)
+            # Asegúrate de que el directorio exista
+            solution_directory = 'data/solutions'
+            if not os.path.exists(solution_directory):
+                os.makedirs(solution_directory)
 
-        solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
-        try:
-            with open(solution_filename, 'w') as f:
-                json.dump(solution, f)
-            print(f'Solution exported to {solution_filename}')
-        except Exception as e:
-            print(f"Error al guardar la solución: {e}")
+            solution_filename = os.path.join(solution_directory, f'solution_{instance_name}')
+            try:
+                with open(solution_filename, 'w') as f:
+                    json.dump(solution, f)
+                print(f'Solution exported to {solution_filename}')
+            except Exception as e:
+                print(f"Error al guardar la solución: {e}")
 
-        plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Backtracking')
+            plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Backtracking', 10)
 
 if __name__ == "__main__":
     main()

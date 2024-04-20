@@ -3,8 +3,7 @@ import numpy as np
 import os
 import time
 
-from graphing import plot_graph
-from shared import calcular_error
+from shared import calcular_error, plot_graph
 
 def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combinaciones, memoria, grid_x, grid_y):
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
@@ -91,9 +90,10 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
 
-        for w in range(15,21):
-            m = 20
-            n = 20
+        for w in range(2,11):
+
+            m = 10
+            n = 10
             N = w
             
             for i in range(reps):
