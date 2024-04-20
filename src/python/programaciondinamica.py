@@ -7,7 +7,7 @@ from shared import calcular_error, plot_graph
 
 def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combinaciones, memoria, grid_x, grid_y):
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
-    if len(bp) == N and bp[-1][0] == m-1 and bp[0][0] == 0:
+    if len(bp) == N and bp[-1][0] == m-1:
         combinaciones[tuple(bp)] = round(error_total, 3)
         return bp, error_total, combinaciones
 
@@ -16,13 +16,11 @@ def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combi
         for z in range(m):
             new_bp = [(0,z)]
             programacion_dinamica_recursiva(m, n, N, instance, 0, new_bp, error_total,combinaciones, memoria, grid_x, grid_y)
-    elif len(bp)< N: #Magia de luli.
+    elif len(bp)< N:
     # Itera sobre todas las posibles posiciones y para el próximo breakpoint.
         for j in range(m):
             # Verifica si aún se pueden agregar breakpoints.
             for k in range(i+1,n):
-                # Calcula el índice del próximo punto x a agregar, limitado por el último índice de la grilla (m - 1).
-
                 # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
                 new_bp = bp + [(k, j)]
 
@@ -78,7 +76,7 @@ def programacion_dinamica(m, n, N, instance):
     return solution, min_error
 
 def main():
-    files = [ 'optimistic_instance.json']#'aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json','toy_instance.json'
+    files = [ 'ethanol_water_vle.json']#'aspen_simulation.json', 'ethanol_water_vle.json', 'optimistic_instance.json','titanium.json','toy_instance.json'
     
     reps = 1
 

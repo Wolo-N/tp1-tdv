@@ -6,7 +6,7 @@ import time
 from shared import calcular_error, plot_graph
 
 def backtracking_recursivo(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y, min_error):
-    if len(bp) == N and bp[-1][0] == m-1 and bp[0][0] == 0:
+    if len(bp) == N and bp[-1][0] == m-1:
         combinaciones[tuple(bp)] = round(error_total, 3)
         return bp, error_total, combinaciones
 
@@ -66,7 +66,7 @@ def backtracking(m, n, N, instance):
     return solution, min_error
 
 def main():
-    files = ['optimistic_instance']#'aspen_simulation', 'ethanol_water_vle', 'titanium', 'optimistic_instance', 'toy_instance'
+    files = [ 'ethanol_water_vle']#'aspen_simulation', 'ethanol_water_vle', 'titanium', 'optimistic_instance', 'toy_instance'
     reps = 1
     for filename in files:
         # Load instance from JSON
@@ -75,11 +75,11 @@ def main():
         with open(filename) as f:
             instance = json.load(f)
         
-        for w in range(1):
+        for w in range(2,11):
 
             m = 10
             n = 10
-            N = 10
+            N = w
 
             for i in range(reps):
                 start_time = time.time()
@@ -107,7 +107,7 @@ def main():
             except Exception as e:
                 print(f"Error al guardar la solución: {e}")
 
-            plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Backtracking', 10)
+            plot_graph(instance_name, m, n, N, average_excecution_time, min_error, 'Backtracking', w)
 
 if __name__ == "__main__":
     main()

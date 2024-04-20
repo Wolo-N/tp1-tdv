@@ -7,7 +7,7 @@ from shared import calcular_error, plot_graph
 
 def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y):
     # Si se han alcanzado N breakpoints, registra la combinación actual y su error total.
-    if len(bp) == N and bp[-1][0] == m-1 and bp[0][0] == 0:
+    if len(bp) == N and bp[-1][0] == m-1:
         combinaciones[tuple(bp)] = round(error_total, 3)
         return bp, error_total, combinaciones
 
