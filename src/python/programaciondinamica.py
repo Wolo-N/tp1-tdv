@@ -7,20 +7,21 @@ from shared import calcular_error, plot_graph
 
 def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combinaciones, memoria, grid_x, grid_y):
     """
-    Realiza una búsqueda recursiva utilizando programación dinámica para encontrar todas las combinaciones posibles de breakpoints en una grilla y calcula el error total para cada combinación.
+    Realiza una búsqueda recursiva utilizando programación dinámica para eficientizar el proceso. Anota todos
+    las posibles combinaciones de breakpoints con sus errores.
 
     Parámetros:
-        m (int): Número de puntos en la grilla a lo largo del eje x.
-        n (int): Número de puntos en la grilla a lo largo del eje y.
-        N (int): Número deseado de breakpoints.
-        instance (dict): Instancia de datos en formato JSON.
-        i (int): Índice actual en el eje y.
-        bp (list): Lista de breakpoints actuales.
-        error_total (float): Error total acumulado.
-        combinaciones (dict): Diccionario para almacenar las combinaciones de breakpoints y sus errores totales.
-        memoria (dict): Diccionario para almacenar el error mínimo para cada punto en la grilla.
-        grid_x (numpy.ndarray): Coordenadas de la grilla en el eje x.
-        grid_y (numpy.ndarray): Coordenadas de la grilla en el eje y.
+        - m (int): Número de puntos en la grilla a lo largo del eje x.
+        - n (int): Número de puntos en la grilla a lo largo del eje y.
+        - N (int): Número deseado de breakpoints.
+        - instance (dict): Instancia de datos en formato JSON.
+        - i (int): Índice actual en el eje y.
+        - bp (list): Lista de breakpoints actuales.
+        - error_total (float): Error total acumulado.
+        - combinaciones (dict): Diccionario para almacenar las combinaciones de breakpoints y sus errores totales.
+        - memoria (dict): Diccionario para almacenar el error mínimo para cada punto en la grilla.
+        - grid_x (numpy.ndarray): Coordenadas de la grilla en el eje x.
+        - grid_y (numpy.ndarray): Coordenadas de la grilla en el eje y.
 
     Devuelve:
         tuple: Tupla que contiene la mejor combinación (lista de breakpoints), su error total y el diccionario actualizado de combinaciones.
@@ -60,6 +61,7 @@ def programacion_dinamica_recursiva(m, n, N, instance, i, bp, error_total, combi
                         memoria[str(k)+","+str(j)] = error_total + error
                         # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
                         programacion_dinamica_recursiva(m, n, N, instance, k, new_bp, error_total + error,combinaciones, memoria, grid_x, grid_y)
+
     # Retorna la lista actual de breakpoints, el error total acumulado y el diccionario de combinaciones probadas.
     return bp, error_total, combinaciones
 
@@ -70,10 +72,10 @@ def programacion_dinamica(m, n, N, instance):
     Utiliza programación dinámica para encontrar la mejor combinación de breakpoints en una grilla.
 
     Parámetros:
-        m (int): Número de puntos en la grilla a lo largo del eje x.
-        n (int): Número de puntos en la grilla a lo largo del eje y.
-        N (int): Número deseado de breakpoints.
-        instance (dict): Instancia de datos en formato JSON.
+        - m (int): Número de puntos en la grilla a lo largo del eje x.
+        - n (int): Número de puntos en la grilla a lo largo del eje y.
+        - N (int): Número deseado de breakpoints.
+        - instance (dict): Instancia de datos en formato JSON.
 
     Devuelve:
         tuple: Tupla que contiene la mejor solución (combinación de breakpoints) y su error total.
@@ -116,7 +118,6 @@ def main():
     reps = 1
     
     for filename in files:
-        # Load instance from JSON
         instance_name = filename
         filename = "data/" + instance_name
         with open(filename) as f:
@@ -137,12 +138,11 @@ def main():
                 end_time = time.time()
                 excecution_time = end_time - start_time
                 total_excecution_time =+ excecution_time
-            
+
             average_excecution_time = total_excecution_time/reps
 
-            # Asegúrate de que el directorio exista
             solution_directory = 'data/solutions'
-            
+
             if not os.path.exists(solution_directory):
                 os.makedirs(solution_directory)
 
