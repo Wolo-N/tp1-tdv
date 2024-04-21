@@ -23,7 +23,7 @@ def backtracking_recursivo(m, n, N, instance, i, bp, error_total, combinaciones,
         # Itera sobre todas las filas y columnas para analizar c/combinación posible.
         for j in range(m):
             for k in range(i+1, n):
-                # Crea una nueva lista de breakpoints añadiendo el punto actual (next_i, j).
+                # Crea una nueva lista de breakpoints añadiendo el punto actual (k, j).
                 new_bp = bp + [(k, j)]
 
                 # Si ya hay breakpoints, calcula el error con el nuevo punto.
