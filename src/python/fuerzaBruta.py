@@ -10,19 +10,19 @@ def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones,
     Función recursiva para encontrar todas las combinaciones de breakpoints y calcular el error total para cada combinación.
     
     Parámetros:
-        m (int): Número de puntos en la grilla a lo largo del eje x.
-        n (int): Número de puntos en la grilla a lo largo del eje y.
-        N (int): Número deseado de breakpoints.
-        instance (dict): Instancia de datos en formato JSON.
-        i (int): Índice de la fila actual en la grilla.
-        bp (list): Lista de breakpoints actuales.
-        error_total (float): Error acumulado hasta el momento.
-        combinaciones (dict): Diccionario para almacenar las combinaciones de breakpoints y sus errores totales.
-        grid_x (numpy.ndarray): Coordenadas x de la grilla.
-        grid_y (numpy.ndarray): Coordenadas y de la grilla.
+        - m (int): Número de puntos en la grilla a lo largo del eje x.
+        - n (int): Número de puntos en la grilla a lo largo del eje y.
+        - N (int): Número deseado de breakpoints.
+        - instance (dict): Instancia de datos en formato JSON.
+        - i (int): Índice de la fila actual en la grilla.
+        - bp (list): Lista de breakpoints actuales.
+        - error_total (float): Error acumulado hasta el momento.
+        - combinaciones (dict(lista de tuplas, error asociado)): Diccionario para almacenar las combinaciones de breakpoints y sus errores totales.
+        - grid_x (numpy.ndarray): Coordenadas x de la grilla.
+        - grid_y (numpy.ndarray): Coordenadas y de la grilla.
     
     Devuelve:
-        tuple: Tupla que contiene la mejor combinación de breakpoints, su error total y el diccionario de combinaciones.
+        combinaciones (dict(lista de tuplas, error asociado)): Diccionario con todas las combinaciones posibles y su error asociado
     """
     # CASO BASE:
         # Se han alcanzado N breakpoints incluyendo de la última columna:
@@ -30,17 +30,18 @@ def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones,
         # Registra la combinación actual y su error total.
         combinaciones[tuple(bp)] = round(error_total, 3)
         return bp, error_total, combinaciones
+    
     # Si es el primer breakpoint, llama recursivamente sobre todas las f(x), sin añadir error.
     if not bp:
         for z in range(m):
             new_bp = [(0,z)]
             fuerza_bruta_recursiva(m, n, N, instance, 0, new_bp, error_total, combinaciones, grid_x, grid_y)
-    # Si ya hay breakpoints pero menos a los esperados (N):
+
+    # Si ya hay breakpoints, pero menos a los esperados (N):
     elif len(bp) < N: 
         # Itera sobre todas las filas y columnas para analizar c/combinación posible.
         for j in range(m):
             for k in range(i+1,n):
-                # Crea una nueva lista de breakpoints añadiendo el punto actual (k, j).
                 new_bp = bp + [(k, j)]
                 if bp:
                     # Calcula el error con el nuevo punto.
