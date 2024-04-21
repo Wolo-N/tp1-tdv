@@ -57,10 +57,10 @@ def fuerza_bruta(m, n, N, instance):
     Pasa parametros de uso a fuerza_bruta_recursiva y ordena su respuesta.
 
     Parámetros:
-        m (int): Número de puntos en la grilla a lo largo del eje x.
-        n (int): Número de puntos en la grilla a lo largo del eje y.
-        N (int): Número deseado de breakpoints.
-        instance (dict): Instancia de datos en formato JSON.
+        - m (int): Número de puntos en la grilla a lo largo del eje x.
+        - n (int): Número de puntos en la grilla a lo largo del eje y.
+        - N (int): Número deseado de breakpoints.
+        - instance (dict): Instancia de datos en formato JSON.
 
     Devuelve:
         tuple: Tupla que contiene la mejor solución (combinación de breakpoints) y su error total.

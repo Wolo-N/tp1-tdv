@@ -6,33 +6,53 @@ import time
 from shared import calcular_error, plot_graph
 
 def backtracking_recursivo(m, n, N, instance, i, bp, error_total, combinaciones, grid_x, grid_y, min_error):
-    
-    # CASO BASE:
-        # Se han alcanzado N breakpoints incluyendo de la última columna:
+    """
+    Función Recursiva para realizar todas las combinaciones posibles recortando las no eficientes.
+
+    Parámetros:
+        - m (int): Número de puntos en la grilla a lo largo del eje x.
+        - n (int): Número de puntos en la grilla a lo largo del eje y.
+        - N (int): Número deseado de breakpoints.
+        - instance (dict): Instancia de datos en formato JSON.
+        - i (int): Índice de la fila actual en la grilla.
+        - bp (list): Lista de breakpoints actuales.
+        - error_total (float): Error acumulado hasta el momento.
+        - combinaciones (dict(lista de tuplas, error asociado)): Diccionario para almacenar las combinaciones de breakpoints y sus errores totales.
+        - grid_x (numpy.ndarray): Coordenadas x de la grilla.
+        - grid_y (numpy.ndarray): Coordenadas y de la grilla.
+        - min_error: Error minimo hasta el momento.
+
+    Devuelve:
+        tuple: Tupla que contiene la solución (mejor combinación de breakpoints) y su error total.
+    """
+
+    # CASO BASE: Se han alcanzado N breakpoints incluyendo de la última columna:
     if len(bp) == N and bp[-1][0] == m-1:
-         # Registra la combinación actual y su error total.
+        # Registra la combinación actual y su error total.
         combinaciones[tuple(bp)] = round(error_total, 3)
         return bp, error_total, combinaciones
+
     # Si es el primer breakpoint, llama recursivamente sobre todas las f(x), sin añadir error.
     if not bp:
         for z in range(m):
             new_bp = [(0, z)]
             backtracking_recursivo(m, n, N, instance, 0, new_bp, error_total, combinaciones, grid_x, grid_y, min_error)
+
     # Si ya hay breakpoints pero menos a los esperados (N):
     elif len(bp) < N:
         # Itera sobre todas las filas y columnas para analizar c/combinación posible.
         for j in range(m):
             for k in range(i+1, n):
-                # Crea una nueva lista de breakpoints añadiendo el punto actual (k, j).
                 new_bp = bp + [(k, j)]
 
                 # Si ya hay breakpoints, calcula el error con el nuevo punto.
                 error = calcular_error(bp[-1], (k, j), grid_x, grid_y, instance)
 
                 # Actualiza el error mínimo dinámicamente en base a los valores actuales del diccionario.
-                # Utiliza un valor predeterminado si el diccionario está vacío.
+                # Utiliza un valor predeterminado alto si el diccionario está vacío.
                 min_error = min(combinaciones.values(), default=1000000)
-                # Poda por optimalidad: solo continua si el error actual más el error total es menor que el mínimo actual.
+
+                # PODA por OPTIMALIDAD : solo continua si el error actual más el error total es menor que el mínimo actual.
                 if (error_total + error) < min_error:
                     # Llama recursivamente para agregar el próximo breakpoint con el nuevo error total.
                     backtracking_recursivo(m, n, N, instance, k, new_bp, error_total + error, combinaciones, grid_x, grid_y, min_error)
@@ -44,10 +64,10 @@ def backtracking(m, n, N, instance):
     Función principal para realizar el ajuste de curva utilizando backtracking.
 
     Parámetros:
-        m (int): Número de puntos en la grilla a lo largo del eje x.
-        n (int): Número de puntos en la grilla a lo largo del eje y.
-        N (int): Número deseado de breakpoints.
-        instance (dict): Instancia de datos en formato JSON.
+        - m (int): Número de puntos en la grilla a lo largo del eje x.
+        - n (int): Número de puntos en la grilla a lo largo del eje y.
+        - N (int): Número deseado de breakpoints.
+        - instance (dict): Instancia de datos en formato JSON.
 
     Devuelve:
         tuple: Tupla que contiene la solución (mejor combinación de breakpoints) y su error total.
@@ -85,10 +105,11 @@ def backtracking(m, n, N, instance):
     return solution, min_error
 
 def main():
-    files = [ 'ethanol_water_vle']#'aspen_simulation', 'ethanol_water_vle', 'titanium', 'optimistic_instance', 'toy_instance'
+    # MAIN COMENTADO EN FUERZA BRUTA, son todos iguales.
+
+    files = [ 'ethanol_water_vle'] #'aspen_simulation', 'ethanol_water_vle', 'titanium', 'optimistic_instance', 'toy_instance'
     reps = 1
     for filename in files:
-        # Load instance from JSON
         instance_name = filename + '.json'
         filename = "data/" + instance_name
         with open(filename) as f:
@@ -112,8 +133,6 @@ def main():
 
             average_excecution_time = total_excecution_time/reps
 
-
-            # Asegúrate de que el directorio exista
             solution_directory = 'data/solutions'
             if not os.path.exists(solution_directory):
                 os.makedirs(solution_directory)
