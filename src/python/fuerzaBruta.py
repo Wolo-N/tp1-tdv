@@ -52,6 +52,18 @@ def fuerza_bruta_recursiva(m, n, N, instance, i, bp, error_total, combinaciones,
     return bp, error_total, combinaciones
 
 def fuerza_bruta(m, n, N, instance):
+    """
+    Realiza una búsqueda exhaustiva para encontrar todas las combinaciones posibles de breakpoints en una grilla y calcula el error total para cada combinación.
+
+    Parámetros:
+        m (int): Número de puntos en la grilla a lo largo del eje x.
+        n (int): Número de puntos en la grilla a lo largo del eje y.
+        N (int): Número deseado de breakpoints.
+        instance (dict): Instancia de datos en formato JSON.
+
+    Devuelve:
+        tuple: Tupla que contiene la mejor solución (combinación de breakpoints) y su error total.
+    """
     # Crea la grilla.
     grid_x = np.linspace(min(instance["x"]), max(instance["x"]), num=m, endpoint=True)
     grid_y = np.linspace(min(instance["y"]), max(instance["y"]), num=n, endpoint=True)
@@ -82,18 +94,6 @@ def fuerza_bruta(m, n, N, instance):
     return solution, min_error
 
 def main():
-    """
-    Realiza una búsqueda exhaustiva para encontrar todas las combinaciones posibles de breakpoints en una grilla y calcula el error total para cada combinación.
-
-    Parámetros:
-        m (int): Número de puntos en la grilla a lo largo del eje x.
-        n (int): Número de puntos en la grilla a lo largo del eje y.
-        N (int): Número deseado de breakpoints.
-        instance (dict): Instancia de datos en formato JSON.
-
-    Devuelve:
-        tuple: Tupla que contiene la mejor solución (combinación de breakpoints) y su error total.
-    """
     files = ['optimistic_instance.json'] #'aspen_simulation.json', 'ethanol_water_vle.json', 'titanium.json', 'optimistic_instance.json', 'toy_instance.json'
     reps = 1
     for filename in files:
