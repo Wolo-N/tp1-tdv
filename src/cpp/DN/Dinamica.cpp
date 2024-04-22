@@ -19,6 +19,7 @@ using namespace nlohmann;
 
 
 double mapValue(double value, double fromLow, double fromHigh, double toLow, double toHigh) {
+    //devuelve el mapeo de una escala a otra
     return double(value - fromLow) / double(fromHigh - fromLow) * double(toHigh - toLow) + toLow;
 }
 
@@ -28,7 +29,7 @@ double calcular_error(tuple<int,int> a, tuple<int,int> b, json instance,int n,in
     double AY = get<1>(a);
     double BY = get<1>(b);
 
-    double maximo = instance["y"][0]; // Inicializamos el máximo con el primer valor
+    double maximo = instance["y"][0]; // busco el minimo y el maximo valor de instance["y"]
     double minimo = instance["y"][0];
     for(int i = 1; i < instance["n"]; i++){
         if(instance["y"][i] > maximo){
@@ -41,38 +42,26 @@ double calcular_error(tuple<int,int> a, tuple<int,int> b, json instance,int n,in
 
 
     double error = 0;
-    for(int i = 0; i < instance["n"]; i++){
+    for(int i = 0; i < instance["n"]; i++){ // por cada punto del archivo json que se encuntre entre los puntos a y b
         double xi = mapValue(instance["x"][i],instance["x"][0],instance["x"][int(instance["n"])-1],0,n-1);
         double yi = mapValue(double(instance["y"][i]),minimo,maximo,0,m-1);
         if(AX <= xi && xi <= BX){
-            //cout<<instance["x"][i]<<", ";
-            double predicted_y = ((BY - AY) / (BX - AX)) * (xi - AX) + AY;           //real y  0.683
-                                                                                     //predicted_y 0.644
-            error += abs( yi - predicted_y);   //parecido al valor real                                      
-                                                                      //errores 0.376,
-        }
+            double predicted_y = ((BY - AY) / (BX - AX)) * (xi - AX) + AY; //tomo el x del punto y lo meto en la recta propuesta
+            error += abs( yi - predicted_y); //sumo los errores para todos los puntos      
+        }                         
+                                                           
     }
-   
     return error;
 }
 
 
 map<vector<tuple<int,int>>,float> dinamica_recursiva(int n, int m, int N, json instance, int i , vector<tuple<int,int>> bp, float error_total, map<vector<tuple<int,int>>,float> &combinaciones, map<string,float>&memoria){
     
-    if(bp.size() == N && get<0>(bp[bp.size()-1]) == m-1 ){
-        combinaciones[bp] = error_total;
-        
-        for (const auto& tuple_elem : bp) {
-        std::cout << " (" << get<0>(tuple_elem) << "," << std::get<1>(tuple_elem) << ")";
-    }
-    std::cout << error_total<<endl;
-
+    if(bp.size() == N && get<0>(bp[bp.size()-1]) == m-1 ){//si no hay mas cantidad de breakpoints disponibles y el ultimo breakpoint esta en la misma columna
+        combinaciones[bp] = error_total; 
         return combinaciones;
     }
-
-    if(bp.size()==0){
-        
-
+    if(bp.size()==0){//el primer llamado de la funcion inicializa llamados recursivos con breakpoints propuestos de la primer columna
         for(int z = 0; z < m; z++){
             vector<tuple<int,int>> new_bp = {make_tuple(0,z)};
             dinamica_recursiva(m,n,N,instance,0,new_bp,error_total,combinaciones,memoria);
@@ -80,15 +69,15 @@ map<vector<tuple<int,int>>,float> dinamica_recursiva(int n, int m, int N, json i
     }
     else if (bp.size() < N){
         for(int j = 0; j < m; j++){
-            for(int k = i+1; k < n; k++){
+            for(int k = i+1; k < n; k++){ // por cada punto de la grilla que se encuentre a la derecha de la columna del ultimo breakpoint
                 
                     vector<tuple<int,int>> new_bp = bp;
-                    new_bp.push_back(make_tuple(k,j));
+                    new_bp.push_back(make_tuple(k,j)); //propone una nueva lista de breakpoints añadiendo uno
                     float error = calcular_error(bp[bp.size()-1], make_tuple(k,j),instance, n,m);
 
-                    string clave = to_string(k) + ","+ to_string(j);
+                    string clave = to_string(k) + ","+ to_string(j); //genera una clave string para el map memoria
                 
-                    if (memoria.find(clave) != memoria.end()){
+                    if (memoria.find(clave) != memoria.end()){ //si el punto no esta en memoria
                         if(memoria[clave] > error_total + error){
                             memoria[clave] = error_total + error;
                             dinamica_recursiva(m, n, N, instance, k , new_bp, error_total + error, combinaciones, memoria);
@@ -99,70 +88,23 @@ map<vector<tuple<int,int>>,float> dinamica_recursiva(int n, int m, int N, json i
                         memoria[clave] = error_total + error;
                         dinamica_recursiva(m, n, N, instance, k , new_bp, error_total + error, combinaciones, memoria);
                     }
-
-
-                    
-                
+            }          
         }
-    }
     }
     return combinaciones;
 }
 
 pair<vector<tuple<int, int>>, float>dinamica(int n, int m, int N, json instance){
-    
-   //map<vector<tuple<int,int>>,float> combinaciones = {};
-    //dinamica_recursiva(n,m,N,instance,0, {}, 0.0 , combinaciones);
-    //for (auto it = combinaciones.begin(); it != combinaciones.end(); ++it) {
-    //#include <algorithm> // para std::min_element
 
-    map<vector<tuple<int,int>>,float> combinaciones = {};
+    map<vector<tuple<int,int>>,float> combinaciones = {}; //defino variables para este scope
     map<string,float> memoria = {};
     dinamica_recursiva(n,m,N,instance,0, {}, 0.0 , combinaciones, memoria);
 
-    auto min_it = combinaciones.begin();
+    auto min_it = combinaciones.begin(); //busco el minimo del map que modifico dinamica_recursiva
     for (auto it = combinaciones.begin(); it != combinaciones.end(); ++it) {
         if (it->second < min_it->second) {
             min_it = it;
         }
-    }
-    std::vector<std::vector<std::tuple<int, int>>> top_combinaciones;
-    std::vector<float> top_valores;
-
-    for (const auto& kvp : combinaciones) {
-        // Comprobar si el valor actual es menor que algún valor en top_valores
-        bool insertado = false;
-        for (size_t i = 0; i < top_valores.size(); ++i) {
-            if (kvp.second < top_valores[i]) {
-                // Insertar el nuevo elemento en la posición i
-                top_combinaciones.insert(top_combinaciones.begin() + i, kvp.first);
-                top_valores.insert(top_valores.begin() + i, kvp.second);
-                insertado = true;
-                break;
-            }
-        }
-
-        if (!insertado && top_valores.size() < 5) {
-            // Si no se insertó y aún no tenemos 5 elementos, añadir al final
-            top_combinaciones.push_back(kvp.first);
-            top_valores.push_back(kvp.second);
-        }
-
-        // Reducir el tamaño a 5 si es necesario
-        if (top_combinaciones.size() > 5) {
-            top_combinaciones.pop_back();
-            top_valores.pop_back();
-        }
-    }
-
-    // Mostrar los top 5 combinaciones con los valores mínimos
-    std::cout << "Top 5 combinaciones con los valores mínimos:\n";
-    for (size_t i = 0; i < top_combinaciones.size(); ++i) {
-        std::cout << "Combinación " << i + 1 << ":\n";
-        for (const auto& tuple_elem : top_combinaciones[i]) {
-            std::cout << "(" << std::get<0>(tuple_elem) << "," << std::get<1>(tuple_elem) << ") ";
-        }
-        std::cout << "- Valor: " << top_valores[i] << "\n";
     }
     return *min_it; // devuelve el par clave-valor con el valor mínimo
 }

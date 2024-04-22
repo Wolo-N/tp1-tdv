@@ -4,7 +4,7 @@ import numpy as np
 import copy
 import os
 
-
+#          ESTE ARCHIVO GRAFICA TODOS LOS ARCHIVOS JSON QUE SE ENCUENTREN EN LA CARPETA SOLUCIONES
 
 def plot_data(data, color):
     plt.plot(data['x'], data['y'],'.', color=color, zorder=4)
